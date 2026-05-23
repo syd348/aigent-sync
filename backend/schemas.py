@@ -33,6 +33,26 @@ class AnalyzeRequest(BaseModel):
     text: str = Field(..., min_length=1, description="Unstructured message text (e.g. from Slack, email)")
 
 # Pydantic schema for LLM structured output and API response
+class AuthUserResponse(BaseModel):
+    id: int
+    slack_user_id: str
+    display_name: str
+    email: Optional[str] = None
+    avatar_url: Optional[str] = None
+    slack_team_id: str
+    team_name: Optional[str] = None
+
+
+class SlackConnectionStatus(BaseModel):
+    connected: bool = False
+    oauth_configured: bool = False
+    bot_token_configured: bool = False
+    connection_type: Optional[str] = None  # oauth | bot_token
+    team_id: Optional[str] = None
+    team_name: Optional[str] = None
+    oauth_login_url: Optional[str] = None
+
+
 class AnalyzeResponse(BaseModel):
     assignee: Optional[str] = Field(None, description="Inferred assignee. If not mentioned or unclear, return null.")
     deadline: Optional[date] = Field(None, description="Inferred deadline in YYYY-MM-DD format. If not mentioned or unclear, return null.")

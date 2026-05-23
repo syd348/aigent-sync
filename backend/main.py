@@ -3,16 +3,22 @@ import re
 import urllib.request
 import json
 from typing import List, Optional
-from datetime import datetime
-from fastapi import FastAPI, Depends, HTTPException, status, Request, BackgroundTasks
+from datetime import datetime, timezone
+from fastapi import FastAPI, Depends, HTTPException, status, Request, BackgroundTasks, Header
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from google import genai
 from google.genai import types
 
+import database  # noqa: F401 — load backend/.env before reading Slack env vars
+
 import models
 import schemas
+import auth_sessions
+import slack_oauth
 from database import engine, get_db
+from http_utils import urlopen as https_urlopen
 
 # Initialize database tables on startup
 models.Base.metadata.create_all(bind=engine)
@@ -106,7 +112,30 @@ def _analyze_text_with_gemini(text: str) -> schemas.AnalyzeResponse:
             raise e
 
 
-def get_slack_username(user_id: str) -> Optional[str]:
+def _get_slack_bot_token(db: Optional[Session] = None) -> Optional[str]:
+    if db is not None:
+        workspace = slack_oauth.get_active_workspace(db)
+        if workspace and workspace.bot_access_token:
+            return workspace.bot_access_token
+    return os.getenv("SLACK_BOT_TOKEN")
+
+
+def _slack_auth_test(token: str) -> Optional[dict]:
+    try:
+        req = urllib.request.Request(
+            "https://slack.com/api/auth.test",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        with https_urlopen(req, timeout=10) as response:
+            data = json.loads(response.read().decode())
+        if data.get("ok"):
+            return data
+    except Exception as e:
+        print(f"Slack auth.test failed: {e}")
+    return None
+
+
+def get_slack_username(user_id: str, db: Optional[Session] = None) -> Optional[str]:
     # Fallback mapping for local testing
     test_users = {
         "U0B5R78G09Y": "박지현",
@@ -116,8 +145,8 @@ def get_slack_username(user_id: str) -> Optional[str]:
     }
     if user_id in test_users:
         return test_users[user_id]
-        
-    token = os.getenv("SLACK_BOT_TOKEN")
+
+    token = _get_slack_bot_token(db)
     if not token:
         return None
         
@@ -127,7 +156,7 @@ def get_slack_username(user_id: str) -> Optional[str]:
             url,
             headers={"Authorization": f"Bearer {token}"}
         )
-        with urllib.request.urlopen(req, timeout=3) as response:
+        with https_urlopen(req, timeout=3) as response:
             res_data = json.loads(response.read().decode())
             if res_data.get("ok"):
                 user_info = res_data.get("user", {})
@@ -255,6 +284,161 @@ def analyze_task(payload: schemas.AnalyzeRequest):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(e)
         )
+
+
+def _workspace_connection_type(workspace: models.SlackWorkspace) -> str:
+    if workspace.installed_by_user_id:
+        return "oauth"
+    return "bot_token"
+
+
+def _build_slack_connection_status(db: Session) -> schemas.SlackConnectionStatus:
+    oauth_configured = slack_oauth.is_oauth_configured()
+    oauth_login_url = slack_oauth.get_oauth_login_url()
+    bot_token_env = os.getenv("SLACK_BOT_TOKEN")
+    workspace = slack_oauth.get_active_workspace(db)
+
+    if workspace:
+        return schemas.SlackConnectionStatus(
+            connected=True,
+            oauth_configured=oauth_configured,
+            bot_token_configured=bool(bot_token_env),
+            connection_type=_workspace_connection_type(workspace),
+            team_id=workspace.team_id,
+            team_name=workspace.team_name,
+            oauth_login_url=oauth_login_url,
+        )
+
+    return schemas.SlackConnectionStatus(
+        connected=False,
+        oauth_configured=oauth_configured,
+        bot_token_configured=bool(bot_token_env),
+        connection_type=None,
+        oauth_login_url=oauth_login_url,
+    )
+
+
+def _parse_bearer_token(authorization: Optional[str] = Header(None)) -> Optional[str]:
+    if not authorization:
+        return None
+    parts = authorization.split(" ", 1)
+    if len(parts) != 2 or parts[0].lower() != "bearer":
+        return None
+    return parts[1].strip() or None
+
+
+def _user_to_response(user: models.User) -> schemas.AuthUserResponse:
+    return schemas.AuthUserResponse(
+        id=user.id,
+        slack_user_id=user.slack_user_id,
+        display_name=user.display_name or user.slack_user_id,
+        email=user.email,
+        avatar_url=user.avatar_url,
+        slack_team_id=user.slack_team_id,
+        team_name=user.team_name,
+    )
+
+
+@app.get("/api/auth/me", response_model=schemas.AuthUserResponse, tags=["Auth"])
+def auth_me(
+    authorization: Optional[str] = Header(None),
+    db: Session = Depends(get_db),
+):
+    token = _parse_bearer_token(authorization)
+    user = auth_sessions.get_user_for_token(db, token)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+    return _user_to_response(user)
+
+
+@app.post("/api/auth/logout", tags=["Auth"])
+def auth_logout(
+    authorization: Optional[str] = Header(None),
+    db: Session = Depends(get_db),
+):
+    token = _parse_bearer_token(authorization)
+    auth_sessions.revoke_token(db, token)
+    return {"ok": True}
+
+
+@app.get("/api/slack/status", response_model=schemas.SlackConnectionStatus, tags=["Slack Integration"])
+def slack_connection_status(db: Session = Depends(get_db)):
+    """Return whether the user has completed Slack install (OAuth or explicit connect)."""
+    return _build_slack_connection_status(db)
+
+
+@app.get("/api/slack/oauth/login", tags=["Slack Integration"])
+def slack_oauth_login(db: Session = Depends(get_db)):
+    """Redirect the browser to Slack's OAuth consent screen."""
+    if not slack_oauth.is_oauth_configured():
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Slack OAuth is not configured. Set SLACK_CLIENT_ID and SLACK_CLIENT_SECRET.",
+        )
+    state = slack_oauth.create_oauth_state(db)
+    return RedirectResponse(slack_oauth.build_authorize_url(state), status_code=302)
+
+
+@app.get("/api/slack/oauth/callback", tags=["Slack Integration"])
+def slack_oauth_callback(
+    code: Optional[str] = None,
+    state: Optional[str] = None,
+    error: Optional[str] = None,
+    db: Session = Depends(get_db),
+):
+    """OAuth redirect target registered in the Slack app settings."""
+    if error:
+        return RedirectResponse(slack_oauth.get_error_redirect_url(error), status_code=302)
+    if not code or not slack_oauth.validate_oauth_state(db, state):
+        return RedirectResponse(
+            slack_oauth.get_error_redirect_url("invalid_state"),
+            status_code=302,
+        )
+    try:
+        oauth_response = slack_oauth.exchange_code_for_token(code)
+        workspace = slack_oauth.upsert_workspace(db, oauth_response)
+
+        authed_user = oauth_response.get("authed_user") or {}
+        slack_user_id = authed_user.get("id")
+        if not slack_user_id:
+            return RedirectResponse(
+                slack_oauth.get_error_redirect_url("missing_slack_user"),
+                status_code=302,
+            )
+
+        profile = auth_sessions.fetch_slack_user_profile(
+            slack_user_id,
+            workspace.bot_access_token,
+        )
+        user = auth_sessions.upsert_user(
+            db,
+            slack_user_id=slack_user_id,
+            slack_team_id=workspace.team_id,
+            team_name=workspace.team_name,
+            profile=profile,
+            slack_user_token=authed_user.get("access_token"),
+        )
+        session_token = auth_sessions.create_login_session(db, user.id)
+        return RedirectResponse(
+            slack_oauth.get_success_redirect_url_with_session(session_token),
+            status_code=302,
+        )
+    except ValueError as exc:
+        return RedirectResponse(slack_oauth.get_error_redirect_url(str(exc)), status_code=302)
+    except Exception as exc:
+        print(f"Slack OAuth callback error: {exc}")
+        return RedirectResponse(
+            slack_oauth.get_error_redirect_url("oauth_callback_failed"),
+            status_code=302,
+        )
+
+
+@app.delete("/api/slack/connection", tags=["Slack Integration"])
+def disconnect_slack(db: Session = Depends(get_db)):
+    """Deactivate OAuth-installed workspaces (env SLACK_BOT_TOKEN is unchanged)."""
+    db.query(models.SlackWorkspace).update({"is_active": False})
+    db.commit()
+    return {"ok": True}
 
 
 # Slack Events API Webhook (/api/slack/events)

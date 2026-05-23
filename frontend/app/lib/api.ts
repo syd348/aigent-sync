@@ -1,6 +1,46 @@
-import { Task, TaskStatus } from "../types";
+import {
+  AuthUser,
+  clearStoredSession,
+  getSessionToken,
+  mapUserFromApi,
+  setStoredSession,
+  StoredAuthSession,
+} from "./auth";
+import { SlackConnectionStatus, Task, TaskStatus } from "../types";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:8000";
+
+function authHeaders(): HeadersInit {
+  const token = getSessionToken();
+  if (!token) return {};
+  return { Authorization: `Bearer ${token}` };
+}
+
+export async function fetchMe(): Promise<AuthUser> {
+  const res = await fetch(`${BACKEND_URL}/api/auth/me`, {
+    headers: authHeaders(),
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error("Not authenticated");
+  const data = await res.json();
+  return mapUserFromApi(data);
+}
+
+export async function bootstrapAuthSession(sessionToken: string): Promise<StoredAuthSession> {
+  setStoredSession({
+    token: sessionToken,
+    user: {
+      id: 0,
+      slackUserId: "",
+      displayName: "Loading…",
+      slackTeamId: "",
+    },
+  });
+  const user = await fetchMe();
+  const session: StoredAuthSession = { token: sessionToken, user };
+  setStoredSession(session);
+  return session;
+}
 
 // Helper to map backend status to frontend status
 function mapStatusToFrontend(backendStatus: string): TaskStatus {
@@ -109,4 +149,30 @@ export async function deleteTask(taskId: string): Promise<boolean> {
   });
   if (!res.ok) throw new Error("Failed to delete task");
   return true;
+}
+
+export function getSlackOAuthLoginUrl(): string {
+  return `${BACKEND_URL}/api/slack/oauth/login`;
+}
+
+export async function fetchSlackConnectionStatus(): Promise<SlackConnectionStatus> {
+  const res = await fetch(`${BACKEND_URL}/api/slack/status`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Failed to fetch Slack connection status");
+  return res.json();
+}
+
+export async function disconnectSlack(): Promise<void> {
+  const res = await fetch(`${BACKEND_URL}/api/slack/connection`, { method: "DELETE" });
+  if (!res.ok) throw new Error("Failed to disconnect Slack");
+}
+
+export async function logout(): Promise<void> {
+  const token = getSessionToken();
+  if (token) {
+    await fetch(`${BACKEND_URL}/api/auth/logout`, {
+      method: "POST",
+      headers: authHeaders(),
+    }).catch(() => undefined);
+  }
+  clearStoredSession();
 }

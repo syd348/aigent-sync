@@ -13,6 +13,16 @@ export interface Task {
   createdAt: string;
 }
 
+export interface SlackConnectionStatus {
+  connected: boolean;
+  oauth_configured: boolean;
+  bot_token_configured: boolean;
+  connection_type?: "oauth" | "bot_token" | null;
+  team_id?: string | null;
+  team_name?: string | null;
+  oauth_login_url?: string | null;
+}
+
 export interface AnalysisResponse {
   title: string;
   assignee: string;

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { SlackOAuthBanner } from "@/app/components/SlackOAuthBanner";
 import { MetricsOverview } from "@/app/components/MetricsOverview";
 import { LoadBalancingCard } from "@/app/components/LoadBalancingCard";
 import { CalendarCard } from "@/app/components/CalendarCard";
@@ -81,6 +82,8 @@ export default function DashboardPage() {
 
   return (
     <div className="max-w-6xl mx-auto animate-in fade-in duration-500">
+      <SlackOAuthBanner />
+
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100 tracking-tight mb-2 transition-colors">대시보드</h1>
         <p className="text-slate-500 dark:text-slate-400 transition-colors">팀의 실시간 성과 및 AI 통찰력을 한눈에 확인하세요.</p>
