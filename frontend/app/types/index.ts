@@ -1,4 +1,5 @@
 export type TaskStatus = "pending" | "in-progress" | "done";
+export type TaskPriority = "High" | "Medium" | "Low";
 
 export interface Task {
   id: string;
@@ -6,6 +7,7 @@ export interface Task {
   assignee: string;
   deadline: string;
   status: TaskStatus;
+  priority?: TaskPriority;
   confidence?: number;
   source?: "slack" | "email" | "manual";
   createdAt: string;

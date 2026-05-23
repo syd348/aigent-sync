@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { MetricsOverview } from "../components/MetricsOverview";
-import { LoadBalancingCard } from "../components/LoadBalancingCard";
-import { IntelligenceFeedCard } from "../components/IntelligenceFeedCard";
-import { fetchTasks } from "../lib/api";
-import { Task } from "../types";
+import { MetricsOverview } from "@/app/components/MetricsOverview";
+import { LoadBalancingCard } from "@/app/components/LoadBalancingCard";
+import { IntelligenceFeedCard } from "@/app/components/IntelligenceFeedCard";
+import { fetchTasks } from "@/app/lib/api";
+import { Task } from "@/app/types";
 import { Loader2 } from "lucide-react";
 
 export default function DashboardPage() {
@@ -30,14 +30,40 @@ export default function DashboardPage() {
   const activeTasks = tasks.filter(t => t.status !== "done").length;
   const doneCount = tasks.filter(t => t.status === "done").length;
   const completionRate = tasks.length === 0 ? 0 : Math.round((doneCount / tasks.length) * 100);
-  
-  const nearingDeadlines = tasks.filter(t => {
-    if (t.status === "done" || !t.deadline) return false;
-    const ld = t.deadline.toLowerCase();
-    return ld.includes("today") || ld.includes("tomorrow") || ld.includes("urgent");
-  }).length;
-  
-  const overdueTasks = tasks.filter(t => t.status !== "done" && t.deadline?.toLowerCase().includes("overdue")).length;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  let nearingDeadlines = 0;
+  let overdueTasks = 0;
+
+  tasks.forEach(t => {
+    if (t.status === "done" || !t.deadline || t.deadline === "TBD") return;
+    
+    // Fallback for mock strings
+    const lowerDeadline = t.deadline.toLowerCase();
+    if (lowerDeadline.includes("today") || lowerDeadline.includes("tomorrow") || lowerDeadline.includes("urgent")) {
+      nearingDeadlines++;
+      return;
+    }
+    if (lowerDeadline.includes("overdue")) {
+      overdueTasks++;
+      return;
+    }
+
+    // YYYY-MM-DD parsing
+    const parts = t.deadline.split('-');
+    if (parts.length === 3) {
+      const taskDate = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+      const diffDays = (taskDate.getTime() - today.getTime()) / (1000 * 3600 * 24);
+      
+      if (diffDays < 0) {
+        overdueTasks++;
+      } else if (diffDays >= 0 && diffDays <= 2) {
+        nearingDeadlines++;
+      }
+    }
+  });
 
   if (isLoading) {
     return (

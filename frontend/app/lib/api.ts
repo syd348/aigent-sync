@@ -30,6 +30,7 @@ function mapTaskToFrontend(backendTask: any): Task {
     assignee: backendTask.assignee || "Unassigned",
     deadline: backendTask.deadline || "TBD",
     status: mapStatusToFrontend(backendTask.status),
+    priority: backendTask.priority || "Medium",
     confidence: undefined, // confidence is not stored in DB
     createdAt: new Date().toISOString(), // Mocking createdAt
   };
