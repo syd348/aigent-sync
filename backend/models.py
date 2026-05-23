@@ -10,3 +10,4 @@ class Task(Base):
     description = Column(Text, nullable=False)
     priority = Column(String(50), nullable=True, default="Medium")  # Low, Medium, High
     status = Column(String(50), nullable=False, default="To-do")    # To-do, In Progress, Done
+    source = Column(String(50), nullable=True, default="manual")    # manual, slack

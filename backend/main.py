@@ -1,4 +1,7 @@
 import os
+import re
+import urllib.request
+import json
 from typing import List, Optional
 from datetime import datetime
 from fastapi import FastAPI, Depends, HTTPException, status, Request, BackgroundTasks
@@ -93,6 +96,35 @@ def _analyze_text_with_gemini(text: str) -> schemas.AnalyzeResponse:
     return schemas.AnalyzeResponse.model_validate_json(response.text)
 
 
+def get_slack_username(user_id: str) -> Optional[str]:
+    # Fallback mapping for local testing
+    test_users = {
+        "U0B5R78G09Y": "박지현",
+    }
+    if user_id in test_users:
+        return test_users[user_id]
+        
+    token = os.getenv("SLACK_BOT_TOKEN")
+    if not token:
+        return None
+        
+    try:
+        url = f"https://slack.com/api/users.info?user={user_id}"
+        req = urllib.request.Request(
+            url,
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        with urllib.request.urlopen(req, timeout=3) as response:
+            res_data = json.loads(response.read().decode())
+            if res_data.get("ok"):
+                user_info = res_data.get("user", {})
+                profile = user_info.get("profile", {})
+                return profile.get("display_name") or user_info.get("real_name") or user_info.get("name")
+    except Exception as e:
+        print(f"Error fetching Slack username for {user_id}: {e}")
+    return None
+
+
 def process_slack_message(text: str):
     """
     Background task to analyze Slack message via Gemini and save to the database.
@@ -100,16 +132,44 @@ def process_slack_message(text: str):
     from database import SessionLocal
     db = SessionLocal()
     try:
-        # 1. Analyze text using Gemini helper
-        analysis = _analyze_text_with_gemini(text)
+        # Pre-process text to resolve Slack mentions if possible for better Gemini context
+        # Find all mentions like <@U0B5R78G09Y>
+        mentions = re.findall(r"<@(U[A-Z0-9]+)>", text)
+        resolved_text = text
+        user_mappings = {}
+        for uid in mentions:
+            name = get_slack_username(uid)
+            if name:
+                resolved_text = resolved_text.replace(f"<@{uid}>", name)
+                user_mappings[uid] = name
+
+        # 1. Analyze text using Gemini helper (using resolved text so Gemini sees actual name)
+        analysis = _analyze_text_with_gemini(resolved_text)
+        
+        # Determine assignee name
+        assignee_name = analysis.assignee
+        # If assignee is still a User ID (e.g. U0B5R78G09Y or <@U...>), resolve it
+        if assignee_name:
+            match = re.search(r"(U[A-Z0-9]+)", assignee_name)
+            if match:
+                uid = match.group(1)
+                resolved_name = get_slack_username(uid) or user_mappings.get(uid)
+                if resolved_name:
+                    assignee_name = resolved_name
+            elif assignee_name.startswith("<@") and assignee_name.endswith(">"):
+                uid = assignee_name[2:-1]
+                resolved_name = get_slack_username(uid) or user_mappings.get(uid)
+                if resolved_name:
+                    assignee_name = resolved_name
         
         # 2. Store extracted task in DB
         db_task = models.Task(
-            assignee=analysis.assignee,
+            assignee=assignee_name,
             deadline=analysis.deadline,
             description=analysis.description,
             priority=analysis.priority,
-            status="To-do"
+            status="To-do",
+            source="slack"
         )
         db.add(db_task)
         db.commit()
@@ -181,7 +241,8 @@ def create_task(task: schemas.TaskCreate, db: Session = Depends(get_db)):
         deadline=task.deadline,
         description=task.description,
         priority=task.priority,
-        status=task.status
+        status=task.status,
+        source=task.source or "manual"
     )
     db.add(db_task)
     db.commit()

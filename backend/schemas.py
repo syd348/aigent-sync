@@ -9,6 +9,7 @@ class TaskBase(BaseModel):
     description: str = Field(..., description="Details and contents of the task")
     priority: Optional[str] = Field("Medium", description="Task priority (Low, Medium, High)")
     status: Optional[str] = Field("To-do", description="Status of the task (To-do, In Progress, Done)")
+    source: Optional[str] = Field("manual", description="Source of the task (manual, slack)")
 
 class TaskCreate(TaskBase):
     pass
@@ -19,6 +20,7 @@ class TaskUpdate(BaseModel):
     description: Optional[str] = None
     priority: Optional[str] = None
     status: Optional[str] = None
+    source: Optional[str] = None
 
 class TaskResponse(TaskBase):
     task_id: int
