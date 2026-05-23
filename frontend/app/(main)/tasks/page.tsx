@@ -151,6 +151,7 @@ export default function TasksPage() {
   const [timeframe, setTimeframe] = useState("Last 7 Days");
   const [showStatusMenu, setShowStatusMenu] = useState(false);
   const [showTimeMenu, setShowTimeMenu] = useState(false);
+  const [showPriorityMenu, setShowPriorityMenu] = useState(false);
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -272,7 +273,7 @@ export default function TasksPage() {
         <div className="bg-white border border-slate-200 rounded-xl p-4 relative shadow-sm">
           <p className="text-[10px] font-bold text-slate-400 tracking-widest uppercase mb-2">Status</p>
           <button
-            onClick={() => { setShowStatusMenu(!showStatusMenu); setShowTimeMenu(false); }}
+            onClick={() => { setShowStatusMenu(!showStatusMenu); setShowTimeMenu(false); setShowPriorityMenu(false); }}
             className="flex items-center justify-between w-full text-sm font-medium text-slate-700 hover:text-slate-900"
           >
             {STATUS_OPTIONS.find(o => o.value === statusFilter)?.label || "All Statuses"}
@@ -297,18 +298,40 @@ export default function TasksPage() {
         </div>
 
         {/* PRIORITY */}
-        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+        <div className="bg-white border border-slate-200 rounded-xl p-4 relative shadow-sm">
           <p className="text-[10px] font-bold text-slate-400 tracking-widest uppercase mb-2">Priority</p>
-          <div className="flex gap-2">
-            {PRIORITY_OPTIONS.map((p) => (
-              <PriorityChip
-                key={p}
-                priority={p}
-                selected={priorityFilter === p}
-                onClick={() => setPriorityFilter(priorityFilter === p ? "" : p)}
-              />
-            ))}
-          </div>
+          <button
+            onClick={() => { setShowPriorityMenu(!showPriorityMenu); setShowStatusMenu(false); setShowTimeMenu(false); }}
+            className="flex items-center justify-between w-full text-sm font-medium text-slate-700 hover:text-slate-900"
+          >
+            {priorityFilter || "All Priorities"}
+            <ChevronDown className="w-4 h-4 text-slate-400" />
+          </button>
+          {showPriorityMenu && (
+            <div className="absolute top-full left-0 mt-1 w-full bg-white border border-slate-200 rounded-lg shadow-lg z-20 overflow-hidden">
+              <button
+                onClick={() => { setPriorityFilter(""); setShowPriorityMenu(false); }}
+                className={cn(
+                  "w-full text-left px-4 py-2 text-sm transition-colors hover:bg-slate-50",
+                  priorityFilter === "" ? "text-indigo-700 font-semibold" : "text-slate-700"
+                )}
+              >
+                All Priorities
+              </button>
+              {PRIORITY_OPTIONS.map((p) => (
+                <button
+                  key={p}
+                  onClick={() => { setPriorityFilter(p); setShowPriorityMenu(false); }}
+                  className={cn(
+                    "w-full text-left px-4 py-2 text-sm transition-colors hover:bg-slate-50",
+                    priorityFilter === p ? "text-indigo-700 font-semibold" : "text-slate-700"
+                  )}
+                >
+                  {p}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* ASSIGNEE */}
@@ -333,7 +356,7 @@ export default function TasksPage() {
         <div className="bg-white border border-slate-200 rounded-xl p-4 relative shadow-sm">
           <p className="text-[10px] font-bold text-slate-400 tracking-widest uppercase mb-2">Timeframe</p>
           <button
-            onClick={() => { setShowTimeMenu(!showTimeMenu); setShowStatusMenu(false); }}
+            onClick={() => { setShowTimeMenu(!showTimeMenu); setShowStatusMenu(false); setShowPriorityMenu(false); }}
             className="flex items-center justify-between w-full text-sm font-medium text-slate-700 hover:text-slate-900"
           >
             {timeframe}
@@ -359,9 +382,9 @@ export default function TasksPage() {
       </div>
 
       {/* Task Table */}
-      <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden mb-6">
+      <div className="bg-white border border-slate-200 rounded-xl shadow-sm mb-6">
         {/* Table Header */}
-        <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_80px_100px] gap-2 px-6 py-3 border-b border-slate-100 bg-slate-50">
+        <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_80px_100px] gap-2 px-6 py-3 border-b border-slate-100 bg-slate-50 rounded-t-xl">
           {["Task Name", "Assignee", "Confidence", "Deadline", "Status", "Channel", "Actions"].map((h) => (
             <div key={h} className="text-[10px] font-bold text-slate-400 tracking-widest uppercase">
               {h}

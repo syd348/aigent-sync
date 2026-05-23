@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { MetricsOverview } from "@/app/components/MetricsOverview";
 import { LoadBalancingCard } from "@/app/components/LoadBalancingCard";
-import { IntelligenceFeedCard } from "@/app/components/IntelligenceFeedCard";
+import { CalendarCard } from "@/app/components/CalendarCard";
 import { fetchTasks } from "@/app/lib/api";
 import { Task } from "@/app/types";
 import { Loader2 } from "lucide-react";
@@ -95,7 +95,7 @@ export default function DashboardPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
         <LoadBalancingCard tasks={tasks} />
-        <IntelligenceFeedCard />
+        <CalendarCard tasks={tasks} />
       </div>
     </div>
   );

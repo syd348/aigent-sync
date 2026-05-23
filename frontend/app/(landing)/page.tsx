@@ -48,10 +48,13 @@ export default function ConnectWorkspacePage() {
               <p className="text-slate-500 text-sm">Sync team channels.</p>
             </div>
             
-            <button className="mt-6 self-start bg-[#111827] hover:bg-black text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 group-hover:px-7 duration-300 ease-out">
+            <a 
+              href="https://slack.com/oauth/v2/authorize?client_id=11198845306484.11193180857286&scope=channels:history,chat:write,groups:history,im:history,mpim:history&redirect_uri=http://localhost:3000/dashboard"
+              className="mt-6 self-start bg-[#111827] hover:bg-black text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 group-hover:px-7 duration-300 ease-out"
+            >
               Connect Slack
               <span className="group-hover:translate-x-1 transition-transform">→</span>
-            </button>
+            </a>
           </div>
 
           {/* Right Column - Two Smaller Cards */}
