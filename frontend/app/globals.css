@@ -5,6 +5,13 @@
   --foreground: #0f172a; /* slate-900 */
 }
 
+.dark {
+  --background: #0f172a; /* slate-900 */
+  --foreground: #f8fafc; /* slate-50 */
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

@@ -124,18 +124,18 @@ export function CalendarCard({ tasks }: CalendarCardProps) {
   const selectedTasks = selectedDate ? getTasksForDate(selectedDate) : [];
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm flex flex-col h-full">
+    <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm flex flex-col h-full transition-colors duration-300">
       {/* Header */}
       <div className="flex justify-between items-center mb-5">
         <div className="flex items-center gap-2">
-          <div className="p-2 bg-indigo-100 rounded-lg text-indigo-700">
+          <div className="p-2 bg-indigo-100 dark:bg-indigo-500/20 rounded-lg text-indigo-700 dark:text-indigo-400">
             <CalendarDays className="w-5 h-5" />
           </div>
-          <h3 className="font-bold text-slate-900 text-lg">캘린더</h3>
+          <h3 className="font-bold text-slate-900 dark:text-slate-100 text-lg">캘린더</h3>
         </div>
         <button
           onClick={goToday}
-          className="text-xs font-semibold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg hover:bg-indigo-100 transition-colors"
+          className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/20 px-3 py-1.5 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-500/30 transition-colors"
         >
           오늘
         </button>
@@ -145,16 +145,16 @@ export function CalendarCard({ tasks }: CalendarCardProps) {
       <div className="flex items-center justify-between mb-4">
         <button
           onClick={prevMonth}
-          className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 transition-colors"
+          className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 transition-colors"
         >
           <ChevronLeft className="w-4 h-4" />
         </button>
-        <h4 className="text-sm font-bold text-slate-900 tracking-tight">
+        <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100 tracking-tight">
           {year}년 {month + 1}월
         </h4>
         <button
           onClick={nextMonth}
-          className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 transition-colors"
+          className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 transition-colors"
         >
           <ChevronRight className="w-4 h-4" />
         </button>
@@ -165,7 +165,7 @@ export function CalendarCard({ tasks }: CalendarCardProps) {
         {WEEKDAYS.map((w) => (
           <div
             key={w}
-            className="text-center text-[10px] font-bold text-slate-400 tracking-widest uppercase py-1"
+            className="text-center text-[10px] font-bold text-slate-400 dark:text-slate-500 tracking-widest uppercase py-1"
           >
             {w}
           </div>
@@ -190,10 +190,10 @@ export function CalendarCard({ tasks }: CalendarCardProps) {
               onClick={() => setSelectedDate(cell.date)}
               className={cn(
                 "relative flex flex-col items-center py-1.5 rounded-lg text-sm transition-all duration-200",
-                cell.isCurrentMonth ? "text-slate-700" : "text-slate-300",
-                isToday && !isSelected && "bg-indigo-50 font-bold text-indigo-700",
-                isSelected && "bg-indigo-600 text-white shadow-md shadow-indigo-200",
-                !isToday && !isSelected && cell.isCurrentMonth && "hover:bg-slate-50",
+                cell.isCurrentMonth ? "text-slate-700 dark:text-slate-300" : "text-slate-300 dark:text-slate-600",
+                isToday && !isSelected && "bg-indigo-50 dark:bg-indigo-500/20 font-bold text-indigo-700 dark:text-indigo-400",
+                isSelected && "bg-indigo-600 text-white shadow-md shadow-indigo-200 dark:shadow-indigo-900",
+                !isToday && !isSelected && cell.isCurrentMonth && "hover:bg-slate-50 dark:hover:bg-slate-700/50",
               )}
             >
               <span className="text-xs leading-none">{cell.day}</span>
@@ -232,30 +232,30 @@ export function CalendarCard({ tasks }: CalendarCardProps) {
       </div>
 
       {/* Divider */}
-      <div className="border-t border-slate-100 my-4" />
+      <div className="border-t border-slate-100 dark:border-slate-700 my-4 transition-colors" />
 
       {/* Selected day tasks OR Upcoming deadlines */}
       {selectedDate && selectedTasks.length > 0 ? (
         <div>
-          <p className="text-[10px] font-bold text-slate-400 tracking-widest uppercase mb-3">
+          <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 tracking-widest uppercase mb-3">
             {selectedDate.toLocaleDateString("ko-KR", { month: "short", day: "numeric" })} — {selectedTasks.length}개의 작업
           </p>
           <div className="space-y-2 max-h-[120px] overflow-y-auto">
             {selectedTasks.map((t) => (
               <div
                 key={t.id}
-                className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-slate-50 border border-slate-100"
+                className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-700/50 border border-slate-100 dark:border-slate-700 transition-colors"
               >
                 <span
                   className={cn(
                     "w-2 h-2 rounded-full shrink-0",
-                    priorityDotColors[t.priority ?? ""] || "bg-slate-300"
+                    priorityDotColors[t.priority ?? ""] || "bg-slate-300 dark:bg-slate-500"
                   )}
                 />
-                <span className="text-xs font-medium text-slate-800 truncate flex-1">
+                <span className="text-xs font-medium text-slate-800 dark:text-slate-200 truncate flex-1">
                   {t.title}
                 </span>
-                <span className="text-[10px] text-slate-400 font-medium shrink-0">
+                <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium shrink-0">
                   {t.assignee}
                 </span>
               </div>
@@ -264,11 +264,11 @@ export function CalendarCard({ tasks }: CalendarCardProps) {
         </div>
       ) : (
         <div>
-          <p className="text-[10px] font-bold text-slate-400 tracking-widest uppercase mb-3">
+          <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 tracking-widest uppercase mb-3">
             다가오는 마감 작업
           </p>
           {upcoming.length === 0 ? (
-            <p className="text-xs text-slate-400 text-center py-3">이번 주에 예정된 마감 작업이 없습니다.</p>
+            <p className="text-xs text-slate-400 dark:text-slate-500 text-center py-3">이번 주에 예정된 마감 작업이 없습니다.</p>
           ) : (
             <div className="space-y-2">
               {upcoming.map((t) => {
@@ -286,25 +286,25 @@ export function CalendarCard({ tasks }: CalendarCardProps) {
                 return (
                   <div
                     key={t.id}
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-slate-50 border border-slate-100"
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-700/50 border border-slate-100 dark:border-slate-700 transition-colors"
                   >
                     <span
                       className={cn(
                         "w-2 h-2 rounded-full shrink-0",
-                        priorityDotColors[t.priority ?? ""] || "bg-slate-300"
+                        priorityDotColors[t.priority ?? ""] || "bg-slate-300 dark:bg-slate-500"
                       )}
                     />
-                    <span className="text-xs font-medium text-slate-800 truncate flex-1">
+                    <span className="text-xs font-medium text-slate-800 dark:text-slate-200 truncate flex-1">
                       {t.title}
                     </span>
                     <span
                       className={cn(
                         "text-[10px] font-bold px-2 py-0.5 rounded-md shrink-0",
                         isTaskToday
-                          ? "bg-red-100 text-red-600"
+                          ? "bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400"
                           : diffDays <= 2
-                          ? "bg-amber-100 text-amber-600"
-                          : "bg-slate-100 text-slate-500"
+                          ? "bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400"
+                          : "bg-slate-100 dark:bg-slate-600 text-slate-500 dark:text-slate-400"
                       )}
                     >
                       {label}

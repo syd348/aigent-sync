@@ -49,14 +49,14 @@ function ConfidenceGauge({ value }: { value: number }) {
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (pct / 100) * circumference;
   const color =
-    pct >= 85 ? "#1e3a8a" : pct >= 60 ? "#f59e0b" : "#ef4444";
+    pct >= 85 ? "#4f46e5" : pct >= 60 ? "#f59e0b" : "#ef4444"; // Adjust colors slightly for dark mode visibility
 
   return (
     <div className="flex flex-col items-center justify-center shrink-0">
       <svg width="72" height="72" viewBox="0 0 72 72">
         <circle
           cx="36" cy="36" r={radius}
-          fill="none" stroke="#f1f5f9" strokeWidth="6"
+          fill="none" className="stroke-slate-100 dark:stroke-slate-800" strokeWidth="6"
         />
         <circle
           cx="36" cy="36" r={radius}
@@ -73,7 +73,7 @@ function ConfidenceGauge({ value }: { value: number }) {
           {pct}%
         </text>
       </svg>
-      <span className="text-[10px] font-semibold text-slate-400 tracking-wider uppercase -mt-1">
+      <span className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 tracking-wider uppercase -mt-1">
         신뢰도
       </span>
     </div>
@@ -89,17 +89,17 @@ function ChannelBadge({ type, label }: { type: "slack" | "email"; label: string 
       <div
         className={cn(
           "w-8 h-8 rounded-md flex items-center justify-center",
-          type === "slack" ? "bg-purple-100" : "bg-blue-100"
+          type === "slack" ? "bg-purple-100 dark:bg-purple-500/20" : "bg-blue-100 dark:bg-blue-500/20"
         )}
       >
         {type === "slack" ? (
-          <MessageSquare className="w-4 h-4 text-purple-700" />
+          <MessageSquare className="w-4 h-4 text-purple-700 dark:text-purple-400" />
         ) : (
-          <Mail className="w-4 h-4 text-blue-600" />
+          <Mail className="w-4 h-4 text-blue-600 dark:text-blue-400" />
         )}
       </div>
-      <span className="font-semibold text-slate-800 text-sm">{label}</span>
-      <span className="text-xs text-slate-400">
+      <span className="font-semibold text-slate-800 dark:text-slate-200 text-sm">{label}</span>
+      <span className="text-xs text-slate-400 dark:text-slate-500">
         {type === "slack" ? "슬랙 메시지" : "이메일 스레드"}
       </span>
     </div>
@@ -121,26 +121,26 @@ function ReviewCard({
   const isLowConfidence = task.confidence < 0.6;
   const badgeLabel = isLowConfidence ? "신뢰도 낮음" : "AI 분석 완료";
   const badgeClass = isLowConfidence
-    ? "bg-red-100 text-red-600 border border-red-200"
-    : "bg-indigo-50 text-indigo-700 border border-indigo-200";
+    ? "bg-red-100 text-red-600 border border-red-200 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20"
+    : "bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-400 dark:border-indigo-500/20";
 
   return (
     <div
       className={cn(
-        "bg-white rounded-2xl border overflow-hidden shadow-sm flex",
-        isLowConfidence ? "border-l-4 border-l-red-400 border-t-slate-200 border-r-slate-200 border-b-slate-200" : "border-slate-200"
+        "bg-white dark:bg-slate-800 rounded-2xl border overflow-hidden shadow-sm flex transition-colors",
+        isLowConfidence ? "border-l-4 border-l-red-400 dark:border-l-red-500 border-t-slate-200 dark:border-t-slate-700 border-r-slate-200 dark:border-r-slate-700 border-b-slate-200 dark:border-b-slate-700" : "border-slate-200 dark:border-slate-700"
       )}
     >
       {/* Left: Original Message */}
-      <div className="w-[42%] shrink-0 border-r border-slate-100 p-6 flex flex-col">
+      <div className="w-[42%] shrink-0 border-r border-slate-100 dark:border-slate-700 p-6 flex flex-col transition-colors">
         <ChannelBadge type={task.channelType} label={task.channel} />
 
         {/* Quotation */}
         <div className="relative flex-1">
-          <span className="absolute -top-1 -left-1 text-4xl text-slate-200 font-serif leading-none select-none">
+          <span className="absolute -top-1 -left-1 text-4xl text-slate-200 dark:text-slate-700 font-serif leading-none select-none transition-colors">
             "
           </span>
-          <p className="text-slate-600 text-sm leading-relaxed italic pl-5 pr-2 pt-3">
+          <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed italic pl-5 pr-2 pt-3 transition-colors">
             {task.originalMessage}
           </p>
         </div>
@@ -155,8 +155,8 @@ function ReviewCard({
           >
             {task.requesterInitials}
           </div>
-          <span className="text-sm font-medium text-slate-700">{task.requester}</span>
-          <span className="text-xs text-slate-400">{task.sentAgo}</span>
+          <span className="text-sm font-medium text-slate-700 dark:text-slate-300 transition-colors">{task.requester}</span>
+          <span className="text-xs text-slate-400 dark:text-slate-500 transition-colors">{task.sentAgo}</span>
         </div>
       </div>
 
@@ -166,10 +166,10 @@ function ReviewCard({
           {/* Badge + Title + Gauge */}
           <div className="flex items-start justify-between gap-4 mb-4">
             <div className="flex-1">
-              <span className={cn("inline-block text-[10px] font-bold px-2 py-0.5 rounded mb-2 tracking-wider uppercase", badgeClass)}>
+              <span className={cn("inline-block text-[10px] font-bold px-2 py-0.5 rounded mb-2 tracking-wider uppercase transition-colors", badgeClass)}>
                 {badgeLabel}
               </span>
-              <h3 className="text-lg font-bold text-slate-900 leading-snug">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 leading-snug transition-colors">
                 {task.aiTitle}
               </h3>
             </div>
@@ -177,29 +177,29 @@ function ReviewCard({
           </div>
 
           {/* Assignee + Deadline */}
-          <div className="flex gap-6 border-t border-slate-100 pt-4">
+          <div className="flex gap-6 border-t border-slate-100 dark:border-slate-700 pt-4 transition-colors">
             <div className="flex items-start gap-2">
-              <User className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
+              <User className="w-4 h-4 text-slate-400 dark:text-slate-500 mt-0.5 shrink-0 transition-colors" />
               <div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">담당자</p>
+                <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5 transition-colors">담당자</p>
                 <p
                   className={cn(
-                    "text-sm font-medium",
-                    isLowConfidence ? "text-slate-400 italic" : "text-slate-800"
+                    "text-sm font-medium transition-colors",
+                    isLowConfidence ? "text-slate-400 dark:text-slate-500 italic" : "text-slate-800 dark:text-slate-200"
                   )}
                 >
                   {task.assignee}
                 </p>
                 {isLowConfidence && (
-                  <p className="text-[10px] text-slate-400">수동 배정 필요</p>
+                  <p className="text-[10px] text-slate-400 dark:text-slate-500 transition-colors">수동 배정 필요</p>
                 )}
               </div>
             </div>
             <div className="flex items-start gap-2">
-              <Calendar className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
+              <Calendar className="w-4 h-4 text-slate-400 dark:text-slate-500 mt-0.5 shrink-0 transition-colors" />
               <div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">마감일</p>
-                <p className="text-sm font-medium text-slate-800 whitespace-pre-line">
+                <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5 transition-colors">마감일</p>
+                <p className="text-sm font-medium text-slate-800 dark:text-slate-200 whitespace-pre-line transition-colors">
                   {task.deadline}
                 </p>
               </div>
@@ -211,12 +211,12 @@ function ReviewCard({
         <div className="flex items-center gap-3 mt-5">
           <button
             onClick={() => onDiscard(task.id)}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50 transition-colors"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
           >
             <Trash2 className="w-3.5 h-3.5" />
             삭제
           </button>
-          <button className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-slate-200 text-indigo-600 text-sm font-medium hover:bg-indigo-50 transition-colors">
+          <button className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-indigo-600 dark:text-indigo-400 text-sm font-medium hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-colors">
             <Pencil className="w-3.5 h-3.5" />
             {isLowConfidence ? "세부 정보 수정" : "수정"}
           </button>
@@ -225,8 +225,8 @@ function ReviewCard({
             className={cn(
               "flex items-center gap-1.5 px-5 py-2 rounded-lg text-sm font-semibold ml-auto transition-colors",
               isLowConfidence
-                ? "bg-slate-300 text-slate-500 cursor-not-allowed"
-                : "bg-indigo-900 text-white hover:bg-indigo-800"
+                ? "bg-slate-300 dark:bg-slate-700 text-slate-500 dark:text-slate-500 cursor-not-allowed"
+                : "bg-indigo-900 dark:bg-indigo-600 text-white hover:bg-indigo-800 dark:hover:bg-indigo-700"
             )}
           >
             {isLowConfidence ? (
@@ -300,22 +300,22 @@ function InputPanel({
   };
 
   return (
-    <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm mb-8">
-      <h2 className="text-base font-bold text-slate-800 mb-3 flex items-center gap-2">
-        <MessageSquare className="w-4 h-4 text-indigo-600" />
+    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 shadow-sm mb-8 transition-colors">
+      <h2 className="text-base font-bold text-slate-800 dark:text-slate-100 mb-3 flex items-center gap-2 transition-colors">
+        <MessageSquare className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
         작업을 추출할 새로운 커뮤니케이션 내용 붙여넣기
       </h2>
       <textarea
         value={text}
         onChange={(e) => setText(e.target.value)}
         placeholder="여기에 슬랙 메시지, 이메일, 회의록을 붙여넣으세요..."
-        className="w-full h-24 p-4 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition"
+        className="w-full h-24 p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-300 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:focus:ring-indigo-500 focus:border-transparent transition-colors"
       />
       <div className="flex justify-end mt-3">
         <button
           onClick={handle}
           disabled={isAnalyzing || !text.trim()}
-          className="flex items-center gap-2 bg-indigo-900 text-white text-sm font-semibold px-5 py-2 rounded-lg hover:bg-indigo-800 transition disabled:opacity-40 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 bg-indigo-900 dark:bg-indigo-600 text-white text-sm font-semibold px-5 py-2 rounded-lg hover:bg-indigo-800 dark:hover:bg-indigo-700 transition disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {isAnalyzing ? (
             <><Loader2 className="w-4 h-4 animate-spin" /> 추출 중...</>
@@ -421,17 +421,17 @@ export default function AIReviewPage() {
   return (
     <div className="max-w-5xl mx-auto animate-in fade-in duration-500 pb-20">
       {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-sm text-slate-400 mb-4">
+      <div className="flex items-center gap-2 text-sm text-slate-400 dark:text-slate-500 mb-4 transition-colors">
         <span>인텔리전스</span>
         <ChevronRight className="w-3.5 h-3.5" />
-        <span className="text-indigo-700 font-semibold">추출 정보 검토</span>
+        <span className="text-indigo-700 dark:text-indigo-400 font-semibold transition-colors">추출 정보 검토</span>
       </div>
 
       {/* Header Row */}
       <div className="flex items-start justify-between gap-6 mb-8">
         <div>
           <div className="flex items-center gap-3 mb-1">
-            <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+            <h1 className="text-3xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight transition-colors">
               AI 검토 대기열
             </h1>
             {newSlackCount > 0 && (
@@ -444,10 +444,10 @@ export default function AIReviewPage() {
               </button>
             )}
           </div>
-          <p className="text-slate-500 text-sm flex items-center gap-2">
+          <p className="text-slate-500 dark:text-slate-400 text-sm flex items-center gap-2 transition-colors">
             워크스페이스 대화에서 추출된 작업을 검토하고 승인하세요.
-            <span className="flex items-center gap-1 text-slate-400 text-xs">
-              <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
+            <span className="flex items-center gap-1 text-slate-400 dark:text-slate-500 text-xs transition-colors">
+              <span className="w-1.5 h-1.5 bg-green-400 dark:bg-green-500 rounded-full animate-pulse" />
               실시간
             </span>
           </p>
@@ -455,29 +455,29 @@ export default function AIReviewPage() {
 
         {/* Stat Cards */}
         <div className="flex gap-4 shrink-0">
-          <div className="bg-white border border-slate-200 rounded-xl px-5 py-3 shadow-sm min-w-[140px]">
+          <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-5 py-3 shadow-sm min-w-[140px] transition-colors">
             <div className="flex items-center gap-2 mb-1">
-              <div className="w-7 h-7 rounded-full bg-indigo-100 flex items-center justify-center">
-                <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
+              <div className="w-7 h-7 rounded-full bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center transition-colors">
+                <Sparkles className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
               </div>
-              <p className="text-[10px] font-bold text-slate-400 tracking-widest uppercase">
+              <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 tracking-widest uppercase transition-colors">
                 평균 신뢰도
               </p>
             </div>
-            <p className="text-2xl font-extrabold text-slate-900">
+            <p className="text-2xl font-extrabold text-slate-900 dark:text-slate-100 transition-colors">
               {(avgConfidence * 100).toFixed(1)}%
             </p>
           </div>
-          <div className="bg-white border border-slate-200 rounded-xl px-5 py-3 shadow-sm min-w-[140px]">
+          <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-5 py-3 shadow-sm min-w-[140px] transition-colors">
             <div className="flex items-center gap-2 mb-1">
-              <div className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center">
-                <ClipboardList className="w-3.5 h-3.5 text-slate-500" />
+              <div className="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center transition-colors">
+                <ClipboardList className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
               </div>
-              <p className="text-[10px] font-bold text-slate-400 tracking-widest uppercase">
+              <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 tracking-widest uppercase transition-colors">
                 대기 중인 항목
               </p>
             </div>
-            <p className="text-2xl font-extrabold text-slate-900">{tasks.length}</p>
+            <p className="text-2xl font-extrabold text-slate-900 dark:text-slate-100 transition-colors">{tasks.length}</p>
           </div>
         </div>
       </div>
@@ -488,8 +488,8 @@ export default function AIReviewPage() {
       {/* Cards */}
       <div className="space-y-5">
         {paginated.length === 0 ? (
-          <div className="text-center py-20 text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-            <CheckCircle className="w-10 h-10 mx-auto mb-3 text-slate-200" />
+          <div className="text-center py-20 text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 transition-colors">
+            <CheckCircle className="w-10 h-10 mx-auto mb-3 text-slate-200 dark:text-slate-600" />
             <p className="font-medium">검토 대기열이 비어 있습니다. 위에 메시지를 붙여넣어 작업을 추출해 보세요.</p>
           </div>
         ) : (
@@ -507,7 +507,7 @@ export default function AIReviewPage() {
       {/* Pagination */}
       {tasks.length > 0 && (
         <div className="flex items-center justify-between mt-8">
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-slate-500 dark:text-slate-400 transition-colors">
             대기 중인 추출 항목 {tasks.length}개 중 {Math.min((page - 1) * ITEMS_PER_PAGE + 1, tasks.length)}–
             {Math.min(page * ITEMS_PER_PAGE, tasks.length)} 표시 중
           </p>
@@ -515,7 +515,7 @@ export default function AIReviewPage() {
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 disabled:opacity-40 transition"
+              className="w-8 h-8 rounded-full border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 transition-colors"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
@@ -524,10 +524,10 @@ export default function AIReviewPage() {
                 key={n}
                 onClick={() => setPage(n)}
                 className={cn(
-                  "w-8 h-8 rounded-full text-sm font-semibold transition",
+                  "w-8 h-8 rounded-full text-sm font-semibold transition-colors",
                   n === page
-                    ? "bg-indigo-900 text-white"
-                    : "border border-slate-200 text-slate-600 hover:bg-slate-50"
+                    ? "bg-indigo-900 dark:bg-indigo-600 text-white"
+                    : "border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
                 )}
               >
                 {n}
@@ -536,7 +536,7 @@ export default function AIReviewPage() {
             <button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
-              className="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 disabled:opacity-40 transition"
+              className="w-8 h-8 rounded-full border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 transition-colors"
             >
               <ChevronRight className="w-4 h-4" />
             </button>

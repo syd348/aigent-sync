@@ -42,14 +42,14 @@ function ConfidenceGauge({ value }: { value: number }) {
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (pct / 100) * circumference;
   const color =
-    pct >= 85 ? "#1e3a8a" : pct >= 60 ? "#f59e0b" : "#ef4444";
+    pct >= 85 ? "#4f46e5" : pct >= 60 ? "#f59e0b" : "#ef4444";
 
   return (
     <div className="flex flex-col items-center justify-center shrink-0">
       <svg width="72" height="72" viewBox="0 0 72 72">
         <circle
           cx="36" cy="36" r={radius}
-          fill="none" stroke="#f1f5f9" strokeWidth="6"
+          fill="none" className="stroke-slate-100 dark:stroke-slate-800" strokeWidth="6"
         />
         <circle
           cx="36" cy="36" r={radius}
@@ -66,7 +66,7 @@ function ConfidenceGauge({ value }: { value: number }) {
           {pct}%
         </text>
       </svg>
-      <span className="text-[10px] font-semibold text-slate-400 tracking-wider uppercase -mt-1">
+      <span className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 tracking-wider uppercase -mt-1">
         신뢰도
       </span>
     </div>
@@ -193,22 +193,22 @@ export function AiTaskModal({ isOpen, onClose }: AiTaskModalProps) {
       />
 
       {/* Modal Container */}
-      <div className="bg-white w-full max-w-xl rounded-2xl shadow-2xl border border-slate-100 overflow-hidden relative z-10 transform transition-all duration-300 animate-in fade-in slide-in-from-bottom-6 duration-300">
+      <div className="bg-white dark:bg-slate-900 w-full max-w-xl rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden relative z-10 transform transition-colors duration-300 animate-in fade-in slide-in-from-bottom-6">
         
         {/* Header */}
-        <div className="bg-slate-50 border-b border-slate-200/80 px-6 py-4 flex items-center justify-between">
+        <div className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200/80 dark:border-slate-700 px-6 py-4 flex items-center justify-between transition-colors">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-900">
+            <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-500/20 flex items-center justify-center text-indigo-900 dark:text-indigo-400 transition-colors">
               <Bot className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-slate-900">AI 작업 어시스턴트</h2>
-              <p className="text-[11px] text-slate-500">자연어 처리를 통해 자동으로 작업 추출</p>
+              <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 transition-colors">AI 작업 어시스턴트</h2>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 transition-colors">자연어 처리를 통해 자동으로 작업 추출</p>
             </div>
           </div>
           <button 
             onClick={onClose}
-            className="w-7 h-7 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-200/70 hover:text-slate-600 transition-colors"
+            className="w-7 h-7 rounded-full flex items-center justify-center text-slate-400 dark:text-slate-500 hover:bg-slate-200/70 dark:hover:bg-slate-700 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -219,20 +219,20 @@ export function AiTaskModal({ isOpen, onClose }: AiTaskModalProps) {
           {stage === "input" && (
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                  <MessageSquare className="w-3.5 h-3.5 text-indigo-900" />
+                <label className="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1.5 transition-colors">
+                  <MessageSquare className="w-3.5 h-3.5 text-indigo-900 dark:text-indigo-400" />
                   커뮤니케이션 내용 또는 요청 사항 붙여넣기
                 </label>
                 <textarea
                   value={text}
                   onChange={(e) => setText(e.target.value)}
                   placeholder="슬랙 메시지, 이메일 스레드, 회의록을 붙여넣거나 다음과 같이 간략하게 입력해보세요: 'Sadie는 2026-06-05까지 분기 보고서를 완료해야 함'"
-                  className="w-full h-36 p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 placeholder-slate-400 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-900 transition-all duration-200"
+                  className="w-full h-36 p-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-700 dark:text-slate-300 placeholder-slate-400 dark:placeholder-slate-500 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-900 dark:focus:border-indigo-500 transition-colors duration-200"
                 />
               </div>
 
               {error && (
-                <div className="flex items-center gap-2 text-red-600 bg-red-50 p-3 rounded-lg text-xs font-semibold">
+               <div className="flex items-center gap-2 text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/10 p-3 rounded-lg text-xs font-semibold transition-colors">
                   <AlertCircle className="w-4 h-4 shrink-0" />
                   <span>{error}</span>
                 </div>
@@ -241,14 +241,14 @@ export function AiTaskModal({ isOpen, onClose }: AiTaskModalProps) {
               <div className="flex justify-end gap-3 mt-4">
                 <button
                   onClick={onClose}
-                  className="px-4 py-2 border border-slate-200 rounded-lg text-slate-600 text-sm font-semibold hover:bg-slate-50 transition-colors"
+                  className="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-600 dark:text-slate-400 text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                 >
                   취소
                 </button>
                 <button
                   onClick={handleAnalyze}
                   disabled={isAnalyzing || !text.trim()}
-                  className="flex items-center gap-2 bg-indigo-900 text-white text-sm font-semibold px-5 py-2 rounded-lg hover:bg-indigo-800 transition disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="flex items-center gap-2 bg-indigo-900 dark:bg-indigo-600 text-white text-sm font-semibold px-5 py-2 rounded-lg hover:bg-indigo-800 dark:hover:bg-indigo-700 transition disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   {isAnalyzing ? (
                     <>
@@ -270,12 +270,12 @@ export function AiTaskModal({ isOpen, onClose }: AiTaskModalProps) {
             <div className="space-y-6">
               
               {/* AI Badge & Confidence */}
-              <div className="flex items-center justify-between bg-slate-50 p-4 rounded-xl border border-slate-100">
+              <div className="flex items-center justify-between bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-700 transition-colors">
                 <div className="space-y-1">
-                  <span className="inline-block text-[10px] font-extrabold px-2 py-0.5 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded tracking-wider uppercase">
+                  <span className="inline-block text-[10px] font-extrabold px-2 py-0.5 bg-indigo-50 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/30 rounded tracking-wider uppercase transition-colors">
                     AI 추천 추출 정보
                   </span>
-                  <p className="text-xs text-slate-500 max-w-[360px] leading-relaxed">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 max-w-[360px] leading-relaxed transition-colors">
                     작업 목록에 추가하기 전에 AI가 분석한 세부 정보를 검토하고 확인하세요.
                   </p>
                 </div>
@@ -285,40 +285,40 @@ export function AiTaskModal({ isOpen, onClose }: AiTaskModalProps) {
               {/* Editable Fields */}
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5">
+                  <label className="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5 transition-colors">
                     작업 제목 / 설명
                   </label>
                   <input
                     type="text"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-900 transition-all"
+                    className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-900 dark:focus:border-indigo-500 transition-colors"
                     placeholder="어떤 작업을 해야 하나요?"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5 flex items-center gap-1">
-                      <User className="w-3.5 h-3.5 text-slate-400" /> 담당자
+                    <label className="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5 flex items-center gap-1 transition-colors">
+                      <User className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" /> 담당자
                     </label>
                     <input
                       type="text"
                       value={assignee}
                       onChange={(e) => setAssignee(e.target.value)}
-                      className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-900 transition-all"
+                      className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-900 dark:focus:border-indigo-500 transition-colors"
                       placeholder="미배정"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5 flex items-center gap-1">
-                      <Calendar className="w-3.5 h-3.5 text-slate-400" /> 마감일 (YYYY-MM-DD)
+                    <label className="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5 flex items-center gap-1 transition-colors">
+                      <Calendar className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" /> 마감일 (YYYY-MM-DD)
                     </label>
                     <input
                       type="text"
                       value={deadline}
                       onChange={(e) => setDeadline(e.target.value)}
-                      className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-900 transition-all"
+                      className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-900 dark:focus:border-indigo-500 transition-colors"
                       placeholder="YYYY-MM-DD"
                     />
                   </div>
@@ -326,21 +326,21 @@ export function AiTaskModal({ isOpen, onClose }: AiTaskModalProps) {
 
                 {/* Priority Selection */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">
+                  <label className="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 transition-colors">
                     우선순위
                   </label>
                   <div className="flex gap-3">
                     {(["High", "Medium", "Low"] as TaskPriority[]).map((p) => {
                       const isActive = priority === p;
                       const activeClasses = {
-                        High: "bg-red-500 text-white border-red-500 shadow-sm shadow-red-100",
-                        Medium: "bg-yellow-400 text-white border-yellow-400 shadow-sm shadow-yellow-100",
-                        Low: "bg-green-500 text-white border-green-500 shadow-sm shadow-green-100",
+                        High: "bg-red-500 text-white border-red-500 shadow-sm shadow-red-100 dark:shadow-red-900/20",
+                        Medium: "bg-yellow-400 text-white border-yellow-400 shadow-sm shadow-yellow-100 dark:shadow-yellow-900/20",
+                        Low: "bg-green-500 text-white border-green-500 shadow-sm shadow-green-100 dark:shadow-green-900/20",
                       };
                       const inactiveClasses = {
-                        High: "bg-white text-slate-600 border-slate-200 hover:border-red-300 hover:text-red-500",
-                        Medium: "bg-white text-slate-600 border-slate-200 hover:border-yellow-300 hover:text-yellow-500",
-                        Low: "bg-white text-slate-600 border-slate-200 hover:border-green-300 hover:text-green-500",
+                        High: "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-red-300 dark:hover:border-red-800 hover:text-red-500 dark:hover:text-red-400",
+                        Medium: "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-yellow-300 dark:hover:border-yellow-800 hover:text-yellow-500 dark:hover:text-yellow-400",
+                        Low: "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-green-300 dark:hover:border-green-800 hover:text-green-500 dark:hover:text-green-400",
                       };
 
                       return (
@@ -362,17 +362,17 @@ export function AiTaskModal({ isOpen, onClose }: AiTaskModalProps) {
               </div>
 
               {error && (
-                <div className="flex items-center gap-2 text-red-600 bg-red-50 p-3 rounded-lg text-xs font-semibold">
+                <div className="flex items-center gap-2 text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/10 p-3 rounded-lg text-xs font-semibold transition-colors">
                   <AlertCircle className="w-4 h-4 shrink-0" />
                   <span>{error}</span>
                 </div>
               )}
 
               {/* Actions Footer */}
-              <div className="flex items-center justify-between border-t border-slate-100 pt-5 mt-4">
+              <div className="flex items-center justify-between border-t border-slate-100 dark:border-slate-700 pt-5 mt-4 transition-colors">
                 <button
                   onClick={() => setStage("input")}
-                  className="flex items-center gap-1.5 text-slate-500 hover:text-slate-700 text-sm font-semibold transition"
+                  className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-sm font-semibold transition-colors"
                 >
                   <ArrowLeft className="w-4 h-4" />
                   이전으로
@@ -380,14 +380,14 @@ export function AiTaskModal({ isOpen, onClose }: AiTaskModalProps) {
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => setStage("input")}
-                    className="px-4 py-2 border border-slate-200 rounded-lg text-slate-600 text-sm font-semibold hover:bg-slate-50 transition-colors"
+                    className="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-600 dark:text-slate-400 text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                   >
                     삭제
                   </button>
                   <button
                     onClick={handleRegister}
                     disabled={isRegistering}
-                    className="flex items-center gap-2 bg-indigo-900 text-white text-sm font-semibold px-5 py-2 rounded-lg hover:bg-indigo-800 transition shadow-sm disabled:opacity-50"
+                    className="flex items-center gap-2 bg-indigo-900 dark:bg-indigo-600 text-white text-sm font-semibold px-5 py-2 rounded-lg hover:bg-indigo-800 dark:hover:bg-indigo-700 transition shadow-sm disabled:opacity-50"
                   >
                     {isRegistering ? (
                       <>
@@ -408,12 +408,12 @@ export function AiTaskModal({ isOpen, onClose }: AiTaskModalProps) {
 
           {stage === "success" && (
             <div className="py-12 flex flex-col items-center justify-center space-y-4 animate-in zoom-in-95 duration-300">
-              <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center border border-green-200 animate-bounce">
-                <CheckCircle className="w-10 h-10 text-green-600" />
+              <div className="w-16 h-16 bg-green-50 dark:bg-green-500/20 rounded-full flex items-center justify-center border border-green-200 dark:border-green-500/30 animate-bounce transition-colors">
+                <CheckCircle className="w-10 h-10 text-green-600 dark:text-green-400" />
               </div>
               <div className="text-center">
-                <h3 className="text-lg font-bold text-slate-900">작업 동기화 완료!</h3>
-                <p className="text-sm text-slate-500 mt-1">AI가 작업을 등록하고 데이터베이스 동기화를 마쳤습니다.</p>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 transition-colors">작업 동기화 완료!</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 transition-colors">AI가 작업을 등록하고 데이터베이스 동기화를 마쳤습니다.</p>
               </div>
             </div>
           )}
