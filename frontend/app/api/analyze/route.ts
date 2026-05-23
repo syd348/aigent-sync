@@ -12,39 +12,37 @@ export async function POST(request: Request) {
       );
     }
 
-    // Simulate LLM processing delay
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-    // Extremely basic mock extraction logic just to return different things
-    let assignee = "Unassigned";
-    let deadline = "TBD";
-    let title = "Extracted Task";
+    // Call the FastAPI /api/analyze endpoint
+    const response = await fetch(`${backendUrl}/api/analyze`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`FastAPI responded with status: ${response.status} - ${errorText}`);
+    }
+
+    const data = await response.json();
     
-    if (text.toLowerCase().includes("sarah")) assignee = "Sarah Miller";
-    else if (text.toLowerCase().includes("alex")) assignee = "Alex Martinez";
-    else if (text.toLowerCase().includes("david")) assignee = "David Wu";
-    else if (text.toLowerCase().includes("security team")) assignee = "Security Team";
-
-    if (text.toLowerCase().includes("friday")) deadline = "Friday 5:00 PM";
-    else if (text.toLowerCase().includes("thursday")) deadline = "Thursday EOD";
-    else if (text.toLowerCase().includes("tomorrow")) deadline = "Tomorrow 12:00 PM";
-
-    if (text.toLowerCase().includes("roadmap")) title = "Update Q3 Roadmap Deck";
-    else if (text.toLowerCase().includes("security")) title = "Review Security Protocols";
-    else if (text.toLowerCase().includes("latency")) title = "Investigate Staging Latency";
-
-    const mockResponse: AnalysisResponse = {
-      title,
-      assignee,
-      deadline,
-      confidence: Math.floor(Math.random() * (99 - 70 + 1) + 70), // Random between 70 and 99
+    // Map backend response (schemas.AnalyzeResponse) to frontend (AnalysisResponse)
+    const frontendResponse: AnalysisResponse = {
+      title: data.description || "Extracted Task",
+      assignee: data.assignee || "Unassigned",
+      deadline: data.deadline || "TBD",
+      confidence: Math.round((data.confidence_score || 0) * 100), // 0.95 -> 95
     };
 
-    return NextResponse.json(mockResponse);
-  } catch (error) {
+    return NextResponse.json(frontendResponse);
+  } catch (error: any) {
+    console.error("Error connecting to backend /api/analyze:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Failed to connect to backend: " + error.message },
       { status: 500 }
     );
   }
 }
+

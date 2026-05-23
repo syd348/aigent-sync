@@ -5,7 +5,7 @@ venv/
 .env
 
 # Database
-tasks.db
+#tasks.db
 
 # macOS
 .DS_Store
