@@ -39,18 +39,16 @@ export default function ConnectWorkspacePage() {
         <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-150 fill-mode-both">
           
           {/* Slack Card - Large Left */}
-          <div className="bg-white rounded-2xl p-8 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-slate-100 flex flex-col justify-between group hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-300">
+          <div className="bg-white rounded-2xl p-6 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-slate-100 flex flex-col justify-between group hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-300">
             <div>
-              <div className="w-16 h-16 rounded-2xl bg-[#f4f2f6] flex items-center justify-center mb-6">
-                <MessageSquare className="w-8 h-8 text-[#4a154b]" fill="currentColor" strokeWidth={0} />
+              <div className="w-12 h-12 rounded-xl bg-[#f4f2f6] flex items-center justify-center mb-4">
+                <MessageSquare className="w-6 h-6 text-[#4a154b]" fill="currentColor" strokeWidth={0} />
               </div>
-              <h2 className="text-2xl font-bold mb-3 text-slate-900">Slack</h2>
-              <p className="text-slate-500 leading-relaxed">
-                Connect your team channels. AI will automatically summarize key decisions and flag urgent requests in real-time.
-              </p>
+              <h2 className="text-xl font-bold mb-1 text-slate-900">Slack</h2>
+              <p className="text-slate-500 text-sm">Sync team channels.</p>
             </div>
             
-            <button className="mt-8 self-start bg-[#111827] hover:bg-black text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2 group-hover:px-8 duration-300 ease-out">
+            <button className="mt-6 self-start bg-[#111827] hover:bg-black text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 group-hover:px-7 duration-300 ease-out">
               Connect Slack
               <span className="group-hover:translate-x-1 transition-transform">→</span>
             </button>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { Task, TaskStatus, TaskPriority } from "@/app/types";
 import { fetchTasks, updateTask, deleteTask } from "@/app/lib/api";
 import {
@@ -137,9 +137,13 @@ function isWithinTimeframe(deadline: string, timeframe: string): boolean {
   return diff <= days;
 }
 
+const POLL_INTERVAL_MS = 30_000;
+
 export default function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [newTaskCount, setNewTaskCount] = useState(0);
+  const prevTaskIdsRef = useRef<Set<string>>(new Set());
 
   // Filters
   const [statusFilter, setStatusFilter] = useState("");
@@ -150,18 +154,32 @@ export default function TasksPage() {
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
 
   useEffect(() => {
-    loadTasks();
-    
-    window.addEventListener("tasks-updated", loadTasks);
+    loadTasks(true);
+
+    // Background polling every 30s (no loading spinner after first load)
+    const intervalId = setInterval(() => loadTasks(false), POLL_INTERVAL_MS);
+
+    window.addEventListener("tasks-updated", () => loadTasks(false));
     return () => {
-      window.removeEventListener("tasks-updated", loadTasks);
+      clearInterval(intervalId);
+      window.removeEventListener("tasks-updated", () => loadTasks(false));
     };
   }, []);
 
-  const loadTasks = async () => {
+  const loadTasks = async (showSpinner = false) => {
     try {
-      setIsLoading(true);
+      if (showSpinner) setIsLoading(true);
       const fetched = await fetchTasks();
+
+      // Detect genuinely new tasks since last poll
+      const newIds = fetched
+        .map((t) => t.id)
+        .filter((id) => !prevTaskIdsRef.current.has(id));
+      if (newIds.length > 0 && prevTaskIdsRef.current.size > 0) {
+        setNewTaskCount((c) => c + newIds.length);
+      }
+      prevTaskIdsRef.current = new Set(fetched.map((t) => t.id));
+
       setTasks(fetched);
     } catch (e) {
       console.error("Failed to load tasks", e);
@@ -214,11 +232,26 @@ export default function TasksPage() {
       {/* Page Header */}
       <div className="flex items-start justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-extrabold text-indigo-900 tracking-tight mb-1">
-            Task Orchestration
-          </h1>
-          <p className="text-slate-500 text-sm">
+          <div className="flex items-center gap-3 mb-1">
+            <h1 className="text-3xl font-extrabold text-indigo-900 tracking-tight">
+              Task Orchestration
+            </h1>
+            {newTaskCount > 0 && (
+              <button
+                onClick={() => setNewTaskCount(0)}
+                className="flex items-center gap-1.5 bg-green-500 text-white text-xs font-bold px-2.5 py-1 rounded-full animate-in zoom-in-75 duration-300 hover:bg-green-600 transition-colors"
+              >
+                <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
+                +{newTaskCount} New
+              </button>
+            )}
+          </div>
+          <p className="text-slate-500 text-sm flex items-center gap-2">
             Manage AI-detected action items and cross-channel workflows.
+            <span className="flex items-center gap-1 text-slate-400 text-xs">
+              <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
+              Live
+            </span>
           </p>
         </div>
         <div className="flex items-center gap-3">

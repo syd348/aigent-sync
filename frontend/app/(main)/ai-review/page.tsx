@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Sparkles,
   ClipboardList,
@@ -17,8 +17,10 @@ import {
   Bot,
   Loader2,
 } from "lucide-react";
-import { createTask } from "@/app/lib/api";
+import { createTask, fetchTasks } from "@/app/lib/api";
 import { cn } from "@/app/lib/utils";
+
+const POLL_INTERVAL_MS = 30_000;
 
 // ─────────────────────────────────────────────
 // Types
@@ -336,6 +338,50 @@ const ITEMS_PER_PAGE = 3;
 export default function AIReviewPage() {
   const [tasks, setTasks] = useState<PendingTask[]>([]);
   const [page, setPage] = useState(1);
+  const [newSlackCount, setNewSlackCount] = useState(0);
+  const seenTaskIdsRef = useRef<Set<string>>(new Set());
+
+  // ── Poll backend DB every 30s for newly saved pending tasks (from Slack)
+  useEffect(() => {
+    const pollNewTasks = async () => {
+      try {
+        const dbTasks = await fetchTasks("pending");
+        const incoming: PendingTask[] = [];
+
+        for (const t of dbTasks) {
+          if (seenTaskIdsRef.current.has(t.id)) continue;
+          seenTaskIdsRef.current.add(t.id);
+
+          incoming.push({
+            id: t.id,
+            channel: t.source === "slack" ? "#slack" : "#manual",
+            channelType: t.source === "slack" ? "slack" : "email",
+            originalMessage: t.title,
+            requester: t.assignee || "Unknown",
+            requesterInitials: (t.assignee || "?").slice(0, 2).toUpperCase(),
+            requesterColor: "bg-purple-500",
+            sentAgo: "Just now",
+            aiTitle: t.title,
+            assignee: t.assignee || "Unassigned",
+            deadline: t.deadline || "Not specified",
+            confidence: t.confidence ?? 0.75,
+          });
+        }
+
+        if (incoming.length > 0) {
+          setTasks((prev) => [...incoming, ...prev]);
+          setNewSlackCount((c) => c + incoming.length);
+          setPage(1);
+        }
+      } catch {
+        // silent — polling should never crash the UI
+      }
+    };
+
+    pollNewTasks(); // run once on mount
+    const id = setInterval(pollNewTasks, POLL_INTERVAL_MS);
+    return () => clearInterval(id);
+  }, []);
 
   const totalPages = Math.ceil(tasks.length / ITEMS_PER_PAGE);
   const paginated = tasks.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
@@ -381,11 +427,26 @@ export default function AIReviewPage() {
       {/* Header Row */}
       <div className="flex items-start justify-between gap-6 mb-8">
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-1">
-            AI Review Queue
-          </h1>
-          <p className="text-slate-500 text-sm">
+          <div className="flex items-center gap-3 mb-1">
+            <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+              AI Review Queue
+            </h1>
+            {newSlackCount > 0 && (
+              <button
+                onClick={() => setNewSlackCount(0)}
+                className="flex items-center gap-1.5 bg-purple-500 text-white text-xs font-bold px-2.5 py-1 rounded-full animate-in zoom-in-75 duration-300 hover:bg-purple-600 transition-colors"
+              >
+                <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
+                +{newSlackCount} from Slack
+              </button>
+            )}
+          </div>
+          <p className="text-slate-500 text-sm flex items-center gap-2">
             Validate tasks extracted from your workspace conversations.
+            <span className="flex items-center gap-1 text-slate-400 text-xs">
+              <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
+              Live
+            </span>
           </p>
         </div>
 
