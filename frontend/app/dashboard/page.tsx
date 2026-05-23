@@ -1,15 +1,51 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { MetricsOverview } from "../components/MetricsOverview";
 import { LoadBalancingCard } from "../components/LoadBalancingCard";
 import { IntelligenceFeedCard } from "../components/IntelligenceFeedCard";
+import { fetchTasks } from "../lib/api";
+import { Task } from "../types";
+import { Loader2 } from "lucide-react";
 
 export default function DashboardPage() {
-  // Mock data for metrics
-  const activeTasks = 42;
-  const completionRate = 78;
-  const nearingDeadlines = 5;
-  const overdueTasks = 2;
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const fetchedTasks = await fetchTasks();
+        setTasks(fetchedTasks);
+      } catch (error) {
+        console.error("Failed to load tasks for dashboard", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadData();
+  }, []);
+
+  // Compute metrics dynamically
+  const activeTasks = tasks.filter(t => t.status !== "done").length;
+  const doneCount = tasks.filter(t => t.status === "done").length;
+  const completionRate = tasks.length === 0 ? 0 : Math.round((doneCount / tasks.length) * 100);
+  
+  const nearingDeadlines = tasks.filter(t => {
+    if (t.status === "done" || !t.deadline) return false;
+    const ld = t.deadline.toLowerCase();
+    return ld.includes("today") || ld.includes("tomorrow") || ld.includes("urgent");
+  }).length;
+  
+  const overdueTasks = tasks.filter(t => t.status !== "done" && t.deadline?.toLowerCase().includes("overdue")).length;
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center py-32">
+        <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-6xl mx-auto animate-in fade-in duration-500">
@@ -26,7 +62,7 @@ export default function DashboardPage() {
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
-        <LoadBalancingCard />
+        <LoadBalancingCard tasks={tasks} />
         <IntelligenceFeedCard />
       </div>
     </div>

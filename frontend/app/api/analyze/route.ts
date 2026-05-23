@@ -12,37 +12,35 @@ export async function POST(request: Request) {
       );
     }
 
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-
-    // Call the FastAPI /api/analyze endpoint
-    const response = await fetch(`${backendUrl}/api/analyze`, {
+    const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:8000";
+    
+    const backendRes = await fetch(`${BACKEND_URL}/api/analyze`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ text }),
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`FastAPI responded with status: ${response.status} - ${errorText}`);
+    if (!backendRes.ok) {
+      const errorText = await backendRes.text();
+      throw new Error(`Backend error: ${errorText}`);
     }
 
-    const data = await response.json();
-    
-    // Map backend response (schemas.AnalyzeResponse) to frontend (AnalysisResponse)
-    const frontendResponse: AnalysisResponse = {
-      title: data.description || "Extracted Task",
+    const data = await backendRes.json();
+
+    // Map Backend AnalyzeResponse to Frontend AnalysisResponse
+    const mappedResponse: AnalysisResponse = {
+      title: data.description || "Untitled Task",
       assignee: data.assignee || "Unassigned",
       deadline: data.deadline || "TBD",
-      confidence: Math.round((data.confidence_score || 0) * 100), // 0.95 -> 95
+      confidence: Math.round((data.confidence_score || 0) * 100),
     };
 
-    return NextResponse.json(frontendResponse);
+    return NextResponse.json(mappedResponse);
   } catch (error: any) {
-    console.error("Error connecting to backend /api/analyze:", error);
+    console.error("Analysis Error:", error);
     return NextResponse.json(
-      { error: "Failed to connect to backend: " + error.message },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }
 }
-
