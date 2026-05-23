@@ -1,7 +1,7 @@
 import os
 from typing import List, Optional
 from datetime import datetime
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI, Depends, HTTPException, status, Request, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from google import genai
@@ -45,14 +45,7 @@ def read_root():
     return {"message": "Welcome to the Automated Office Request Organization API"}
 
 
-# 1. LLM Analysis API (/api/analyze)
-@app.post("/api/analyze", response_model=schemas.AnalyzeResponse, tags=["LLM Analysis"])
-def analyze_task(payload: schemas.AnalyzeRequest):
-    """
-    Analyze unstructured text from Slack, email, etc., to extract task attributes:
-    assignee (Who), deadline (When), description (What), and priority.
-    Uses 'gemini-2.5-flash' and provides a confidence score for context-based inference.
-    """
+def _analyze_text_with_gemini(text: str) -> schemas.AnalyzeResponse:
     global client
     
     # Ensure client is initialized
@@ -60,18 +53,12 @@ def analyze_task(payload: schemas.AnalyzeRequest):
         try:
             client = genai.Client()
         except Exception as e:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Google GenAI Client is not configured. Please set GEMINI_API_KEY environment variable. Error: {str(e)}"
-            )
+            raise RuntimeError(f"Google GenAI Client is not configured. Please set GEMINI_API_KEY environment variable. Error: {str(e)}")
             
     # Quick API Key check
     api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="GEMINI_API_KEY is not configured in the environment variables."
-        )
+        raise RuntimeError("GEMINI_API_KEY is not configured in the environment variables.")
 
     # Provide local current date context for relative date calculations (e.g. "today", "tomorrow", "by next Friday")
     current_time_str = datetime.now().strftime("%Y-%m-%d (%A)")
@@ -91,30 +78,96 @@ def analyze_task(payload: schemas.AnalyzeRequest):
     Reference Current Date (today): {current_time_str}
 
     Input Message:
-    "{payload.text}"
+    "{text}"
     """
 
+    response = client.models.generate_content(
+        model='gemini-2.5-flash',
+        contents=prompt,
+        config=types.GenerateContentConfig(
+            response_mime_type="application/json",
+            response_schema=schemas.AnalyzeResponse,
+        ),
+    )
+    
+    return schemas.AnalyzeResponse.model_validate_json(response.text)
 
 
+def process_slack_message(text: str):
+    """
+    Background task to analyze Slack message via Gemini and save to the database.
+    """
+    from database import SessionLocal
+    db = SessionLocal()
     try:
-        # Request structured JSON response adhering to schemas.AnalyzeResponse
-        response = client.models.generate_content(
-            model='gemini-2.5-flash',
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                response_mime_type="application/json",
-                response_schema=schemas.AnalyzeResponse,
-            ),
-        )
+        # 1. Analyze text using Gemini helper
+        analysis = _analyze_text_with_gemini(text)
         
-        # Parse the structured response text
-        result = schemas.AnalyzeResponse.model_validate_json(response.text)
-        return result
+        # 2. Store extracted task in DB
+        db_task = models.Task(
+            assignee=analysis.assignee,
+            deadline=analysis.deadline,
+            description=analysis.description,
+            priority=analysis.priority,
+            status="To-do"
+        )
+        db.add(db_task)
+        db.commit()
+        db.refresh(db_task)
+        print(f"Auto-ingested Slack Task: {db_task.description} (ID: {db_task.task_id})")
+    except Exception as e:
+        print(f"Error auto-ingesting Slack message: {str(e)}")
+    finally:
+        db.close()
+
+
+# 1. LLM Analysis API (/api/analyze)
+@app.post("/api/analyze", response_model=schemas.AnalyzeResponse, tags=["LLM Analysis"])
+def analyze_task(payload: schemas.AnalyzeRequest):
+    """
+    Analyze unstructured text from Slack, email, etc., to extract task attributes:
+    assignee (Who), deadline (When), description (What), and priority.
+    Uses 'gemini-2.5-flash' and provides a confidence score for context-based inference.
+    """
+    try:
+        return _analyze_text_with_gemini(payload.text)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to analyze message using Gemini: {str(e)}"
+            detail=str(e)
         )
+
+
+# Slack Events API Webhook (/api/slack/events)
+@app.post("/api/slack/events", tags=["Slack Integration"])
+async def slack_events(request: Request, background_tasks: BackgroundTasks):
+    """
+    Slack Events API Webhook handler.
+    Handles URL Verification handshake and processes message events.
+    """
+    payload = await request.json()
+    
+    # 1. URL Verification challenge handler (for initial Slack webhook registration)
+    if payload.get("type") == "url_verification":
+        return {"challenge": payload.get("challenge")}
+        
+    # 2. Event callbacks (e.g., messages posted in channels)
+    if payload.get("type") == "event_callback":
+        event = payload.get("event", {})
+        
+        # Avoid bot loop: only process normal user messages
+        is_normal_message = (
+            event.get("type") == "message" 
+            and not event.get("bot_id") 
+            and not event.get("subtype")
+        )
+        if is_normal_message:
+            text = event.get("text")
+            if text:
+                # Add task to background to respond to Slack immediately (within 3 seconds limit)
+                background_tasks.add_task(process_slack_message, text)
+                
+    return {"status": "ok"}
 
 
 # 2. Database Schema & CRUD (/api/tasks)
