@@ -1,7 +1,7 @@
 "use client";
 
 import { Task, TaskStatus } from "@/app/types";
-import { User, Clock, CheckCircle2, Circle, ArrowRightCircle } from "lucide-react";
+import { User, Clock, CheckCircle2, Circle, ArrowRightCircle, Sparkles } from "lucide-react";
 import { cn } from "@/app/lib/utils";
 
 interface TaskListProps {
@@ -9,17 +9,18 @@ interface TaskListProps {
   onStatusChange: (taskId: string, newStatus: TaskStatus) => void;
 }
 
-const statusConfig = {
+const statusConfig: Record<string, { icon: any; color: string }> = {
   "pending": { icon: Circle, color: "text-slate-400" },
   "in-progress": { icon: ArrowRightCircle, color: "text-blue-500" },
   "done": { icon: CheckCircle2, color: "text-emerald-500" },
+  "review": { icon: Sparkles, color: "text-purple-500" },
 };
 
 export function TaskList({ tasks, onStatusChange }: TaskListProps) {
   if (tasks.length === 0) {
     return (
       <div className="bg-white rounded-xl border border-slate-200 p-12 text-center text-slate-500 font-medium shadow-sm">
-        No tasks found.
+        작업을 찾을 수 없습니다.
       </div>
     );
   }
@@ -29,11 +30,11 @@ export function TaskList({ tasks, onStatusChange }: TaskListProps) {
       <table className="w-full text-left border-collapse">
         <thead>
           <tr className="bg-slate-50 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500 font-bold">
-            <th className="px-6 py-4">Status</th>
-            <th className="px-6 py-4">Task Name</th>
-            <th className="px-6 py-4">Assignee</th>
-            <th className="px-6 py-4">Deadline</th>
-            <th className="px-6 py-4 text-right">Confidence</th>
+            <th className="px-6 py-4">상태</th>
+            <th className="px-6 py-4">작업 이름</th>
+            <th className="px-6 py-4">담당자</th>
+            <th className="px-6 py-4">마감일</th>
+            <th className="px-6 py-4 text-right">신뢰도</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100">
@@ -49,9 +50,10 @@ export function TaskList({ tasks, onStatusChange }: TaskListProps) {
                       onChange={(e) => onStatusChange(task.id, e.target.value as TaskStatus)}
                       className="absolute inset-0 opacity-0 cursor-pointer w-8"
                     >
-                      <option value="pending">Pending</option>
-                      <option value="in-progress">In Progress</option>
-                      <option value="done">Done</option>
+                      <option value="pending">대기 중</option>
+                      <option value="in-progress">진행 중</option>
+                      <option value="done">완료</option>
+                      <option value="review">검토 중</option>
                     </select>
                   </div>
                 </td>

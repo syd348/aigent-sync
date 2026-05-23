@@ -15,7 +15,7 @@ interface CalendarCardProps {
   tasks: Task[];
 }
 
-const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
 const MONTH_NAMES = [
   "January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December",
@@ -131,13 +131,13 @@ export function CalendarCard({ tasks }: CalendarCardProps) {
           <div className="p-2 bg-indigo-100 rounded-lg text-indigo-700">
             <CalendarDays className="w-5 h-5" />
           </div>
-          <h3 className="font-bold text-slate-900 text-lg">Calendar</h3>
+          <h3 className="font-bold text-slate-900 text-lg">캘린더</h3>
         </div>
         <button
           onClick={goToday}
           className="text-xs font-semibold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg hover:bg-indigo-100 transition-colors"
         >
-          Today
+          오늘
         </button>
       </div>
 
@@ -150,7 +150,7 @@ export function CalendarCard({ tasks }: CalendarCardProps) {
           <ChevronLeft className="w-4 h-4" />
         </button>
         <h4 className="text-sm font-bold text-slate-900 tracking-tight">
-          {MONTH_NAMES[month]} {year}
+          {year}년 {month + 1}월
         </h4>
         <button
           onClick={nextMonth}
@@ -238,7 +238,7 @@ export function CalendarCard({ tasks }: CalendarCardProps) {
       {selectedDate && selectedTasks.length > 0 ? (
         <div>
           <p className="text-[10px] font-bold text-slate-400 tracking-widest uppercase mb-3">
-            {selectedDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })} — {selectedTasks.length} task{selectedTasks.length > 1 ? "s" : ""}
+            {selectedDate.toLocaleDateString("ko-KR", { month: "short", day: "numeric" })} — {selectedTasks.length}개의 작업
           </p>
           <div className="space-y-2 max-h-[120px] overflow-y-auto">
             {selectedTasks.map((t) => (
@@ -265,10 +265,10 @@ export function CalendarCard({ tasks }: CalendarCardProps) {
       ) : (
         <div>
           <p className="text-[10px] font-bold text-slate-400 tracking-widest uppercase mb-3">
-            Upcoming Deadlines
+            다가오는 마감 작업
           </p>
           {upcoming.length === 0 ? (
-            <p className="text-xs text-slate-400 text-center py-3">No upcoming deadlines this week</p>
+            <p className="text-xs text-slate-400 text-center py-3">이번 주에 예정된 마감 작업이 없습니다.</p>
           ) : (
             <div className="space-y-2">
               {upcoming.map((t) => {
@@ -278,10 +278,10 @@ export function CalendarCard({ tasks }: CalendarCardProps) {
                   (d.getTime() - today.getTime()) / (1000 * 3600 * 24)
                 );
                 const label = isTaskToday
-                  ? "Today"
+                  ? "오늘"
                   : diffDays === 1
-                  ? "Tomorrow"
-                  : `${diffDays}d`;
+                  ? "내일"
+                  : `${diffDays}일 후`;
 
                 return (
                   <div

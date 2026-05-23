@@ -67,7 +67,7 @@ function ConfidenceGauge({ value }: { value: number }) {
         </text>
       </svg>
       <span className="text-[10px] font-semibold text-slate-400 tracking-wider uppercase -mt-1">
-        Confidence
+        신뢰도
       </span>
     </div>
   );
@@ -136,7 +136,7 @@ export function AiTaskModal({ isOpen, onClose }: AiTaskModalProps) {
       const data = await response.json();
       
       // Load details into state
-      setTitle(data.title || "Untitled Task");
+      setTitle(data.title || "제목 없는 작업");
       setAssignee(data.assignee && data.assignee !== "Unassigned" ? data.assignee : "");
       setDeadline(data.deadline && data.deadline !== "TBD" ? data.deadline : "");
       setConfidence(data.confidence ?? 75);
@@ -144,7 +144,7 @@ export function AiTaskModal({ isOpen, onClose }: AiTaskModalProps) {
       setStage("review");
     } catch (err: any) {
       console.error(err);
-      setError("AI analysis failed. Please try again or specify details clearly.");
+      setError("AI 분석에 실패했습니다. 다시 시도하거나 세부 사항을 명확히 적어주세요.");
     } finally {
       setIsAnalyzing(false);
     }
@@ -152,7 +152,7 @@ export function AiTaskModal({ isOpen, onClose }: AiTaskModalProps) {
 
   const handleRegister = async () => {
     if (!title.trim()) {
-      setError("Task title is required.");
+      setError("작업 제목은 필수 항목입니다.");
       return;
     }
     setIsRegistering(true);
@@ -178,7 +178,7 @@ export function AiTaskModal({ isOpen, onClose }: AiTaskModalProps) {
       }, 1500);
     } catch (err: any) {
       console.error(err);
-      setError("Failed to create task in the database.");
+      setError("데이터베이스에 작업을 생성하지 못했습니다.");
     } finally {
       setIsRegistering(false);
     }
@@ -202,8 +202,8 @@ export function AiTaskModal({ isOpen, onClose }: AiTaskModalProps) {
               <Bot className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-slate-900">AI Task Assistant</h2>
-              <p className="text-[11px] text-slate-500">Auto-extract items using NLP</p>
+              <h2 className="text-base font-bold text-slate-900">AI 작업 어시스턴트</h2>
+              <p className="text-[11px] text-slate-500">자연어 처리를 통해 자동으로 작업 추출</p>
             </div>
           </div>
           <button 
@@ -221,12 +221,12 @@ export function AiTaskModal({ isOpen, onClose }: AiTaskModalProps) {
               <div>
                 <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
                   <MessageSquare className="w-3.5 h-3.5 text-indigo-900" />
-                  Paste Communication or Request
+                  커뮤니케이션 내용 또는 요청 사항 붙여넣기
                 </label>
                 <textarea
                   value={text}
                   onChange={(e) => setText(e.target.value)}
-                  placeholder="Paste a Slack message, email thread, meeting transcript, or simply write a description like: 'Sadie needs to complete the quarterly report by 2026-06-05'"
+                  placeholder="슬랙 메시지, 이메일 스레드, 회의록을 붙여넣거나 다음과 같이 간략하게 입력해보세요: 'Sadie는 2026-06-05까지 분기 보고서를 완료해야 함'"
                   className="w-full h-36 p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 placeholder-slate-400 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-900 transition-all duration-200"
                 />
               </div>
@@ -243,7 +243,7 @@ export function AiTaskModal({ isOpen, onClose }: AiTaskModalProps) {
                   onClick={onClose}
                   className="px-4 py-2 border border-slate-200 rounded-lg text-slate-600 text-sm font-semibold hover:bg-slate-50 transition-colors"
                 >
-                  Cancel
+                  취소
                 </button>
                 <button
                   onClick={handleAnalyze}
@@ -253,12 +253,12 @@ export function AiTaskModal({ isOpen, onClose }: AiTaskModalProps) {
                   {isAnalyzing ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      Analyzing Text...
+                      텍스트 분석 중...
                     </>
                   ) : (
                     <>
                       <Sparkles className="w-4 h-4" />
-                      Analyze with AI
+                      AI 분석 시작
                     </>
                   )}
                 </button>
@@ -273,10 +273,10 @@ export function AiTaskModal({ isOpen, onClose }: AiTaskModalProps) {
               <div className="flex items-center justify-between bg-slate-50 p-4 rounded-xl border border-slate-100">
                 <div className="space-y-1">
                   <span className="inline-block text-[10px] font-extrabold px-2 py-0.5 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded tracking-wider uppercase">
-                    AI Proposed Extract
+                    AI 추천 추출 정보
                   </span>
                   <p className="text-xs text-slate-500 max-w-[360px] leading-relaxed">
-                    Review and verify details extracted by the AI before adding to the task queue.
+                    작업 목록에 추가하기 전에 AI가 분석한 세부 정보를 검토하고 확인하세요.
                   </p>
                 </div>
                 <ConfidenceGauge value={confidence} />
@@ -286,33 +286,33 @@ export function AiTaskModal({ isOpen, onClose }: AiTaskModalProps) {
               <div className="space-y-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5">
-                    Task Title / Description
+                    작업 제목 / 설명
                   </label>
                   <input
                     type="text"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-900 transition-all"
-                    placeholder="What needs to be done?"
+                    placeholder="어떤 작업을 해야 하나요?"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5 flex items-center gap-1">
-                      <User className="w-3.5 h-3.5 text-slate-400" /> Assignee
+                      <User className="w-3.5 h-3.5 text-slate-400" /> 담당자
                     </label>
                     <input
                       type="text"
                       value={assignee}
                       onChange={(e) => setAssignee(e.target.value)}
                       className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-900 transition-all"
-                      placeholder="Unassigned"
+                      placeholder="미배정"
                     />
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5 flex items-center gap-1">
-                      <Calendar className="w-3.5 h-3.5 text-slate-400" /> Deadline (YYYY-MM-DD)
+                      <Calendar className="w-3.5 h-3.5 text-slate-400" /> 마감일 (YYYY-MM-DD)
                     </label>
                     <input
                       type="text"
@@ -327,7 +327,7 @@ export function AiTaskModal({ isOpen, onClose }: AiTaskModalProps) {
                 {/* Priority Selection */}
                 <div>
                   <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">
-                    Priority Level
+                    우선순위
                   </label>
                   <div className="flex gap-3">
                     {(["High", "Medium", "Low"] as TaskPriority[]).map((p) => {
@@ -353,7 +353,7 @@ export function AiTaskModal({ isOpen, onClose }: AiTaskModalProps) {
                             isActive ? activeClasses[p] : inactiveClasses[p]
                           )}
                         >
-                          {p}
+                          {p === "High" ? "높음" : p === "Medium" ? "보통" : "낮음"}
                         </button>
                       );
                     })}
@@ -375,14 +375,14 @@ export function AiTaskModal({ isOpen, onClose }: AiTaskModalProps) {
                   className="flex items-center gap-1.5 text-slate-500 hover:text-slate-700 text-sm font-semibold transition"
                 >
                   <ArrowLeft className="w-4 h-4" />
-                  Back to Text
+                  이전으로
                 </button>
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => setStage("input")}
                     className="px-4 py-2 border border-slate-200 rounded-lg text-slate-600 text-sm font-semibold hover:bg-slate-50 transition-colors"
                   >
-                    Discard
+                    삭제
                   </button>
                   <button
                     onClick={handleRegister}
@@ -392,12 +392,12 @@ export function AiTaskModal({ isOpen, onClose }: AiTaskModalProps) {
                     {isRegistering ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        Saving Task...
+                        작업 저장 중...
                       </>
                     ) : (
                       <>
                         <CheckCircle className="w-4 h-4" />
-                        Approve & Register
+                        승인 및 등록
                       </>
                     )}
                   </button>
@@ -412,8 +412,8 @@ export function AiTaskModal({ isOpen, onClose }: AiTaskModalProps) {
                 <CheckCircle className="w-10 h-10 text-green-600" />
               </div>
               <div className="text-center">
-                <h3 className="text-lg font-bold text-slate-900">Task Sync Completed!</h3>
-                <p className="text-sm text-slate-500 mt-1">AI registered task and successfully synced database.</p>
+                <h3 className="text-lg font-bold text-slate-900">작업 동기화 완료!</h3>
+                <p className="text-sm text-slate-500 mt-1">AI가 작업을 등록하고 데이터베이스 동기화를 마쳤습니다.</p>
               </div>
             </div>
           )}

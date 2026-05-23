@@ -10,9 +10,9 @@ interface KanbanBoardProps {
 }
 
 const columns: { id: TaskStatus; label: string; color: string }[] = [
-  { id: "pending", label: "Pending", color: "bg-slate-100 text-slate-700 border-slate-200" },
-  { id: "in-progress", label: "In Progress", color: "bg-blue-50 text-blue-700 border-blue-200" },
-  { id: "done", label: "Done", color: "bg-emerald-50 text-emerald-700 border-emerald-200" }
+  { id: "pending", label: "대기 중", color: "bg-slate-100 text-slate-700 border-slate-200" },
+  { id: "in-progress", label: "진행 중", color: "bg-blue-50 text-blue-700 border-blue-200" },
+  { id: "done", label: "완료", color: "bg-emerald-50 text-emerald-700 border-emerald-200" }
 ];
 
 export function KanbanBoard({ tasks, onStatusChange }: KanbanBoardProps) {
@@ -64,9 +64,9 @@ export function KanbanBoard({ tasks, onStatusChange }: KanbanBoardProps) {
                       onChange={(e) => onStatusChange(task.id, e.target.value as TaskStatus)}
                       className="text-xs bg-slate-50 border border-slate-200 rounded px-2 py-1 text-slate-600 outline-none focus:ring-1 focus:ring-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                     >
-                      <option value="pending">Pending</option>
-                      <option value="in-progress">In Progress</option>
-                      <option value="done">Done</option>
+                      <option value="pending">대기 중</option>
+                      <option value="in-progress">진행 중</option>
+                      <option value="done">완료</option>
                     </select>
                   </div>
                 </div>
@@ -74,7 +74,7 @@ export function KanbanBoard({ tasks, onStatusChange }: KanbanBoardProps) {
               
               {columnTasks.length === 0 && (
                 <div className="text-center py-8 text-slate-400 text-sm font-medium border-2 border-dashed border-slate-200 rounded-lg">
-                  No tasks here
+                  여기에 작업이 없습니다.
                 </div>
               )}
             </div>

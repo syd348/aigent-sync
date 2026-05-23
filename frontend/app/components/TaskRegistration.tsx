@@ -35,7 +35,7 @@ export function TaskRegistration({ onRegisterTask }: TaskRegistrationProps) {
       const data = await response.json();
       setExtractedData(data);
     } catch (err) {
-      setError("Analysis failed. Please try again or enter manually.");
+      setError("분석에 실패했습니다. 다시 시도하거나 수동으로 입력해 주세요.");
     } finally {
       setIsAnalyzing(false);
     }
@@ -66,9 +66,9 @@ export function TaskRegistration({ onRegisterTask }: TaskRegistrationProps) {
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm mb-8 overflow-hidden">
       <div className="bg-slate-50 border-b border-slate-200 p-4 px-6 flex items-center gap-3">
         <Sparkles className="w-5 h-5 text-indigo-600" />
-        <h2 className="text-lg font-bold text-slate-800">AI Task Registration</h2>
+        <h2 className="text-lg font-bold text-slate-800">AI 작업 등록</h2>
         <span className="text-xs font-medium bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full ml-auto">
-          Slack / Email
+          슬랙 / 이메일
         </span>
       </div>
       
@@ -78,7 +78,7 @@ export function TaskRegistration({ onRegisterTask }: TaskRegistrationProps) {
           <textarea
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
-            placeholder="Paste Slack or Email message here..."
+            placeholder="여기에 슬랙 메시지 또는 이메일 내용을 붙여넣으세요..."
             className="w-full h-32 pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none text-slate-700"
           />
         </div>
@@ -92,12 +92,12 @@ export function TaskRegistration({ onRegisterTask }: TaskRegistrationProps) {
             {isAnalyzing ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                Analyzing...
+                분석 중...
               </>
             ) : (
               <>
                 <Bot className="w-4 h-4" />
-                AI Analysis Request
+                AI 분석 요청
               </>
             )}
           </button>
@@ -108,7 +108,7 @@ export function TaskRegistration({ onRegisterTask }: TaskRegistrationProps) {
         {extractedData && (
           <div className="mt-8 border border-slate-200 rounded-xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="bg-slate-50 px-6 py-3 border-b border-slate-200 flex justify-between items-center">
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">AI Proposed Extract</span>
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">AI 추천 추출 정보</span>
               <div className="flex items-center gap-2">
                 <div className="relative w-8 h-8 flex items-center justify-center">
                   <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
@@ -129,7 +129,7 @@ export function TaskRegistration({ onRegisterTask }: TaskRegistrationProps) {
                   </svg>
                   <span className="absolute text-[10px] font-bold">{extractedData.confidence}%</span>
                 </div>
-                <span className="text-xs text-slate-500">Confidence</span>
+                <span className="text-xs text-slate-500">신뢰도</span>
               </div>
             </div>
             
@@ -137,7 +137,7 @@ export function TaskRegistration({ onRegisterTask }: TaskRegistrationProps) {
               {isEditing ? (
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-xs font-medium text-slate-500 mb-1">Task Title</label>
+                    <label className="block text-xs font-medium text-slate-500 mb-1">작업 제목</label>
                     <input 
                       type="text" 
                       value={extractedData.title}
@@ -147,7 +147,7 @@ export function TaskRegistration({ onRegisterTask }: TaskRegistrationProps) {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-medium text-slate-500 mb-1">Assignee</label>
+                      <label className="block text-xs font-medium text-slate-500 mb-1">담당자</label>
                       <input 
                         type="text" 
                         value={extractedData.assignee}
@@ -156,7 +156,7 @@ export function TaskRegistration({ onRegisterTask }: TaskRegistrationProps) {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-slate-500 mb-1">Deadline</label>
+                      <label className="block text-xs font-medium text-slate-500 mb-1">마감일</label>
                       <input 
                         type="text" 
                         value={extractedData.deadline}
@@ -171,7 +171,7 @@ export function TaskRegistration({ onRegisterTask }: TaskRegistrationProps) {
                   <h3 className="text-xl font-bold text-slate-900 mb-6">{extractedData.title}</h3>
                   <div className="flex items-center gap-12">
                     <div>
-                      <span className="text-xs font-medium text-slate-400 block mb-1 uppercase">Assignee</span>
+                      <span className="text-xs font-medium text-slate-400 block mb-1 uppercase">담당자</span>
                       <div className="flex items-center gap-2">
                         <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-slate-500">
                           <User className="w-3 h-3" />
@@ -180,7 +180,7 @@ export function TaskRegistration({ onRegisterTask }: TaskRegistrationProps) {
                       </div>
                     </div>
                     <div>
-                      <span className="text-xs font-medium text-slate-400 block mb-1 uppercase">Deadline</span>
+                      <span className="text-xs font-medium text-slate-400 block mb-1 uppercase">마감일</span>
                       <div className="flex items-center gap-2 text-slate-700">
                         <Calendar className="w-4 h-4 text-slate-400" />
                         <span className="text-sm font-medium">{extractedData.deadline}</span>
@@ -196,7 +196,7 @@ export function TaskRegistration({ onRegisterTask }: TaskRegistrationProps) {
                 onClick={handleDiscard}
                 className="flex items-center gap-2 text-slate-500 hover:text-slate-700 px-3 py-2 rounded-md hover:bg-slate-200 transition-colors text-sm font-medium"
               >
-                <X className="w-4 h-4" /> Discard
+                <X className="w-4 h-4" /> 삭제
               </button>
               
               <div className="flex items-center gap-3">
@@ -204,13 +204,13 @@ export function TaskRegistration({ onRegisterTask }: TaskRegistrationProps) {
                   onClick={() => setIsEditing(!isEditing)}
                   className="flex items-center gap-2 border border-slate-300 text-slate-700 px-4 py-2 rounded-lg hover:bg-slate-50 transition-colors text-sm font-medium"
                 >
-                  <Edit2 className="w-4 h-4" /> {isEditing ? "Done Editing" : "Edit Details"}
+                  <Edit2 className="w-4 h-4" /> {isEditing ? "수정 완료" : "세부 정보 수정"}
                 </button>
                 <button 
                   onClick={handleApprove}
                   className="flex items-center gap-2 bg-indigo-900 text-white px-6 py-2 rounded-lg hover:bg-indigo-800 transition-colors text-sm font-medium shadow-sm"
                 >
-                  <Check className="w-4 h-4" /> Approve & Register
+                  <Check className="w-4 h-4" /> 승인 및 등록
                 </button>
               </div>
             </div>

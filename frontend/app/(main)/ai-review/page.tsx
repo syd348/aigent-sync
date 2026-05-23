@@ -17,7 +17,7 @@ import {
   Bot,
   Loader2,
 } from "lucide-react";
-import { createTask, fetchTasks } from "@/app/lib/api";
+import { createTask, fetchTasks, updateTask, deleteTask } from "@/app/lib/api";
 import { cn } from "@/app/lib/utils";
 
 const POLL_INTERVAL_MS = 30_000;
@@ -74,7 +74,7 @@ function ConfidenceGauge({ value }: { value: number }) {
         </text>
       </svg>
       <span className="text-[10px] font-semibold text-slate-400 tracking-wider uppercase -mt-1">
-        Confidence
+        신뢰도
       </span>
     </div>
   );
@@ -100,7 +100,7 @@ function ChannelBadge({ type, label }: { type: "slack" | "email"; label: string 
       </div>
       <span className="font-semibold text-slate-800 text-sm">{label}</span>
       <span className="text-xs text-slate-400">
-        {type === "slack" ? "Slack Message" : "Email Thread"}
+        {type === "slack" ? "슬랙 메시지" : "이메일 스레드"}
       </span>
     </div>
   );
@@ -119,7 +119,7 @@ function ReviewCard({
   onDiscard: (id: string) => void;
 }) {
   const isLowConfidence = task.confidence < 0.6;
-  const badgeLabel = isLowConfidence ? "LOW CONFIDENCE" : "AI PROPOSED";
+  const badgeLabel = isLowConfidence ? "신뢰도 낮음" : "AI 분석 완료";
   const badgeClass = isLowConfidence
     ? "bg-red-100 text-red-600 border border-red-200"
     : "bg-indigo-50 text-indigo-700 border border-indigo-200";
@@ -181,7 +181,7 @@ function ReviewCard({
             <div className="flex items-start gap-2">
               <User className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
               <div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Assignee</p>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">담당자</p>
                 <p
                   className={cn(
                     "text-sm font-medium",
@@ -191,14 +191,14 @@ function ReviewCard({
                   {task.assignee}
                 </p>
                 {isLowConfidence && (
-                  <p className="text-[10px] text-slate-400">Manual assign required</p>
+                  <p className="text-[10px] text-slate-400">수동 배정 필요</p>
                 )}
               </div>
             </div>
             <div className="flex items-start gap-2">
               <Calendar className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
               <div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Deadline</p>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">마감일</p>
                 <p className="text-sm font-medium text-slate-800 whitespace-pre-line">
                   {task.deadline}
                 </p>
@@ -214,11 +214,11 @@ function ReviewCard({
             className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50 transition-colors"
           >
             <Trash2 className="w-3.5 h-3.5" />
-            Discard
+            삭제
           </button>
           <button className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-slate-200 text-indigo-600 text-sm font-medium hover:bg-indigo-50 transition-colors">
             <Pencil className="w-3.5 h-3.5" />
-            {isLowConfidence ? "Edit Details" : "Edit"}
+            {isLowConfidence ? "세부 정보 수정" : "수정"}
           </button>
           <button
             onClick={() => !isLowConfidence && onApprove(task.id)}
@@ -232,12 +232,12 @@ function ReviewCard({
             {isLowConfidence ? (
               <>
                 <Lock className="w-3.5 h-3.5" />
-                Fix to Approve
+                수정 후 승인
               </>
             ) : (
               <>
                 <CheckCircle className="w-3.5 h-3.5" />
-                Approve & Sync
+                승인 및 동기화
               </>
             )}
           </button>
@@ -278,22 +278,22 @@ function InputPanel({
         requester: "You",
         requesterInitials: "YU",
         requesterColor: "bg-indigo-500",
-        sentAgo: "Just now",
+        sentAgo: "방금 전",
         aiTitle: data.description || "Untitled Task",
-        assignee: data.assignee || "Unclear – Manual assign required",
+        assignee: data.assignee || "불확실 – 수동 배정 필요",
         deadline: data.deadline
-          ? new Date(data.deadline).toLocaleDateString("en-US", {
+          ? new Date(data.deadline).toLocaleDateString("ko-KR", {
               month: "short",
               day: "numeric",
               weekday: "long",
-            }) + " · 5:00 PM"
-          : "Not specified",
+            }) + " · 오후 5:00"
+          : "지정되지 않음",
         confidence: data.confidence_score ?? 0.7,
       };
       onAnalyzed(newTask);
       setText("");
     } catch {
-      alert("Analysis failed. Please try again.");
+      alert("분석에 실패했습니다. 다시 시도해 주세요.");
     } finally {
       setIsAnalyzing(false);
     }
@@ -303,12 +303,12 @@ function InputPanel({
     <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm mb-8">
       <h2 className="text-base font-bold text-slate-800 mb-3 flex items-center gap-2">
         <MessageSquare className="w-4 h-4 text-indigo-600" />
-        Paste a new communication to extract tasks
+        작업을 추출할 새로운 커뮤니케이션 내용 붙여넣기
       </h2>
       <textarea
         value={text}
         onChange={(e) => setText(e.target.value)}
-        placeholder="Paste Slack message, email, or meeting notes here..."
+        placeholder="여기에 슬랙 메시지, 이메일, 회의록을 붙여넣으세요..."
         className="w-full h-24 p-4 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition"
       />
       <div className="flex justify-end mt-3">
@@ -318,9 +318,9 @@ function InputPanel({
           className="flex items-center gap-2 bg-indigo-900 text-white text-sm font-semibold px-5 py-2 rounded-lg hover:bg-indigo-800 transition disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {isAnalyzing ? (
-            <><Loader2 className="w-4 h-4 animate-spin" /> Extracting...</>
+            <><Loader2 className="w-4 h-4 animate-spin" /> 추출 중...</>
           ) : (
-            <><Bot className="w-4 h-4" /> Analyze with AI</>
+            <><Bot className="w-4 h-4" /> AI 분석 시작</>
           )}
         </button>
       </div>
@@ -345,7 +345,7 @@ export default function AIReviewPage() {
   useEffect(() => {
     const pollNewTasks = async () => {
       try {
-        const dbTasks = await fetchTasks("pending");
+        const dbTasks = await fetchTasks("review");
         const incoming: PendingTask[] = [];
 
         for (const t of dbTasks) {
@@ -360,10 +360,10 @@ export default function AIReviewPage() {
             requester: t.assignee || "Unknown",
             requesterInitials: (t.assignee || "?").slice(0, 2).toUpperCase(),
             requesterColor: "bg-purple-500",
-            sentAgo: "Just now",
+            sentAgo: "방금 전",
             aiTitle: t.title,
-            assignee: t.assignee || "Unassigned",
-            deadline: t.deadline || "Not specified",
+            assignee: t.assignee || "미배정",
+            deadline: t.deadline || "지정되지 않음",
             confidence: t.confidence ?? 0.75,
           });
         }
@@ -395,9 +395,7 @@ export default function AIReviewPage() {
     const task = tasks.find((t) => t.id === id);
     if (!task) return;
     try {
-      await createTask({
-        title: task.aiTitle,
-        assignee: task.assignee,
+      await updateTask(id, {
         status: "pending",
       });
     } catch {
@@ -406,7 +404,12 @@ export default function AIReviewPage() {
     setTasks((prev) => prev.filter((t) => t.id !== id));
   };
 
-  const handleDiscard = (id: string) => {
+  const handleDiscard = async (id: string) => {
+    try {
+      await deleteTask(id);
+    } catch {
+      // Proceed anyway
+    }
     setTasks((prev) => prev.filter((t) => t.id !== id));
   };
 
@@ -419,9 +422,9 @@ export default function AIReviewPage() {
     <div className="max-w-5xl mx-auto animate-in fade-in duration-500 pb-20">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-slate-400 mb-4">
-        <span>Intelligence</span>
+        <span>인텔리전스</span>
         <ChevronRight className="w-3.5 h-3.5" />
-        <span className="text-indigo-700 font-semibold">Extraction Review</span>
+        <span className="text-indigo-700 font-semibold">추출 정보 검토</span>
       </div>
 
       {/* Header Row */}
@@ -429,7 +432,7 @@ export default function AIReviewPage() {
         <div>
           <div className="flex items-center gap-3 mb-1">
             <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
-              AI Review Queue
+              AI 검토 대기열
             </h1>
             {newSlackCount > 0 && (
               <button
@@ -437,15 +440,15 @@ export default function AIReviewPage() {
                 className="flex items-center gap-1.5 bg-purple-500 text-white text-xs font-bold px-2.5 py-1 rounded-full animate-in zoom-in-75 duration-300 hover:bg-purple-600 transition-colors"
               >
                 <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
-                +{newSlackCount} from Slack
+                +{newSlackCount}개 슬랙 연동 항목
               </button>
             )}
           </div>
           <p className="text-slate-500 text-sm flex items-center gap-2">
-            Validate tasks extracted from your workspace conversations.
+            워크스페이스 대화에서 추출된 작업을 검토하고 승인하세요.
             <span className="flex items-center gap-1 text-slate-400 text-xs">
               <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
-              Live
+              실시간
             </span>
           </p>
         </div>
@@ -458,7 +461,7 @@ export default function AIReviewPage() {
                 <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
               </div>
               <p className="text-[10px] font-bold text-slate-400 tracking-widest uppercase">
-                Avg. Confidence
+                평균 신뢰도
               </p>
             </div>
             <p className="text-2xl font-extrabold text-slate-900">
@@ -471,7 +474,7 @@ export default function AIReviewPage() {
                 <ClipboardList className="w-3.5 h-3.5 text-slate-500" />
               </div>
               <p className="text-[10px] font-bold text-slate-400 tracking-widest uppercase">
-                Pending Items
+                대기 중인 항목
               </p>
             </div>
             <p className="text-2xl font-extrabold text-slate-900">{tasks.length}</p>
@@ -487,7 +490,7 @@ export default function AIReviewPage() {
         {paginated.length === 0 ? (
           <div className="text-center py-20 text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
             <CheckCircle className="w-10 h-10 mx-auto mb-3 text-slate-200" />
-            <p className="font-medium">Queue is empty. Paste a message above to extract tasks.</p>
+            <p className="font-medium">검토 대기열이 비어 있습니다. 위에 메시지를 붙여넣어 작업을 추출해 보세요.</p>
           </div>
         ) : (
           paginated.map((task) => (
@@ -505,8 +508,8 @@ export default function AIReviewPage() {
       {tasks.length > 0 && (
         <div className="flex items-center justify-between mt-8">
           <p className="text-sm text-slate-500">
-            Showing {Math.min((page - 1) * ITEMS_PER_PAGE + 1, tasks.length)}–
-            {Math.min(page * ITEMS_PER_PAGE, tasks.length)} of {tasks.length} pending extractions
+            대기 중인 추출 항목 {tasks.length}개 중 {Math.min((page - 1) * ITEMS_PER_PAGE + 1, tasks.length)}–
+            {Math.min(page * ITEMS_PER_PAGE, tasks.length)} 표시 중
           </p>
           <div className="flex items-center gap-2">
             <button

@@ -9,14 +9,14 @@ interface LoadBalancingCardProps {
 
 // Predefined visuals for common users, fallback for others
 const userVisuals: Record<string, { role: string, avatar: string, color: string, barColor: string }> = {
-  "Sarah Jenkins": { role: "Product Manager", avatar: "SJ", color: "bg-blue-100 text-blue-700", barColor: "bg-blue-500" },
-  "Marcus Thorne": { role: "Developer", avatar: "MT", color: "bg-emerald-100 text-emerald-700", barColor: "bg-emerald-500" },
-  "Alex Chen": { role: "Designer", avatar: "AC", color: "bg-purple-100 text-purple-700", barColor: "bg-purple-500" },
-  "Emily Watson": { role: "QA Engineer", avatar: "EW", color: "bg-orange-100 text-orange-700", barColor: "bg-orange-500" },
-  "Security Team": { role: "Security", avatar: "ST", color: "bg-red-100 text-red-700", barColor: "bg-red-500" },
-  "Sarah Miller": { role: "Operations", avatar: "SM", color: "bg-blue-100 text-blue-700", barColor: "bg-blue-500" },
-  "Alex Martinez": { role: "Developer", avatar: "AM", color: "bg-emerald-100 text-emerald-700", barColor: "bg-emerald-500" },
-  "David Wu": { role: "Engineer", avatar: "DW", color: "bg-purple-100 text-purple-700", barColor: "bg-purple-500" },
+  "Sarah Jenkins": { role: "제품 관리자", avatar: "SJ", color: "bg-blue-100 text-blue-700", barColor: "bg-blue-500" },
+  "Marcus Thorne": { role: "개발자", avatar: "MT", color: "bg-emerald-100 text-emerald-700", barColor: "bg-emerald-500" },
+  "Alex Chen": { role: "디자이너", avatar: "AC", color: "bg-purple-100 text-purple-700", barColor: "bg-purple-500" },
+  "Emily Watson": { role: "QA 엔지니어", avatar: "EW", color: "bg-orange-100 text-orange-700", barColor: "bg-orange-500" },
+  "Security Team": { role: "보안", avatar: "ST", color: "bg-red-100 text-red-700", barColor: "bg-red-500" },
+  "Sarah Miller": { role: "운영", avatar: "SM", color: "bg-blue-100 text-blue-700", barColor: "bg-blue-500" },
+  "Alex Martinez": { role: "개발자", avatar: "AM", color: "bg-emerald-100 text-emerald-700", barColor: "bg-emerald-500" },
+  "David Wu": { role: "엔지니어", avatar: "DW", color: "bg-purple-100 text-purple-700", barColor: "bg-purple-500" },
 };
 
 function getInitials(name: string) {
@@ -28,7 +28,7 @@ export function LoadBalancingCard({ tasks }: LoadBalancingCardProps) {
   const assigneeStats = tasks.reduce((acc, task) => {
     if (task.status === "done") return acc; // Only count active tasks for load balancing
     
-    const name = task.assignee || "Unassigned";
+    const name = task.assignee || "미배정";
     if (!acc[name]) {
       acc[name] = 0;
     }
@@ -41,7 +41,7 @@ export function LoadBalancingCard({ tasks }: LoadBalancingCardProps) {
     .sort((a, b) => b[1] - a[1]) // sort by load
     .map(([name, count]) => {
       const visuals = userVisuals[name] || {
-        role: "Team Member",
+        role: "팀원",
         avatar: getInitials(name) || "?",
         color: "bg-slate-100 text-slate-700",
         barColor: "bg-slate-500"
@@ -68,17 +68,17 @@ export function LoadBalancingCard({ tasks }: LoadBalancingCardProps) {
           <div className="p-2 bg-slate-100 rounded-lg text-slate-700">
             <Users className="w-5 h-5" />
           </div>
-          <h3 className="font-bold text-slate-900 text-lg">Team Load Balancing</h3>
+          <h3 className="font-bold text-slate-900 text-lg">팀 업무 로드 밸런싱</h3>
         </div>
         <button className="text-slate-400 hover:text-slate-600">
           <MoreHorizontal className="w-5 h-5" />
         </button>
       </div>
-      <p className="text-sm text-slate-500 mb-6">Real-time active task distribution among team members.</p>
+      <p className="text-sm text-slate-500 mb-6">팀원별 실시간 진행 중인 작업 분배 현황입니다.</p>
       
       <div className="space-y-6 flex-1">
         {teamMembers.length === 0 ? (
-          <div className="text-sm text-slate-500 text-center py-8">No active tasks assigned to anyone.</div>
+          <div className="text-sm text-slate-500 text-center py-8">배정된 진행 중인 작업이 없습니다.</div>
         ) : (
           teamMembers.map((member) => (
             <div key={member.name} className="flex flex-col gap-2">
@@ -94,7 +94,7 @@ export function LoadBalancingCard({ tasks }: LoadBalancingCardProps) {
                 </div>
                 <div className="text-right">
                   <span className="text-lg font-bold text-slate-900">{member.tasks}</span>
-                  <span className="text-sm text-slate-500"> / {member.total} cap</span>
+                  <span className="text-sm text-slate-500"> / {member.total}개</span>
                 </div>
               </div>
               

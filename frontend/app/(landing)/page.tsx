@@ -15,7 +15,7 @@ export default function ConnectWorkspacePage() {
           href="/dashboard" 
           className="text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors"
         >
-          Skip for now
+          나중에 하기
         </Link>
       </nav>
 
@@ -25,13 +25,13 @@ export default function ConnectWorkspacePage() {
         {/* Header Section */}
         <div className="text-center mb-12 max-w-2xl animate-in fade-in slide-in-from-bottom-4 duration-700">
           <div className="inline-flex items-center justify-center px-3 py-1 mb-6 rounded-full bg-blue-100 text-blue-700 text-xs font-semibold tracking-wider uppercase">
-            AI Setup Phase 1
+            AI 설정 1단계
           </div>
           <h1 className="text-4xl lg:text-5xl font-extrabold tracking-tight mb-4 text-slate-900">
-            Connect Your Workspace
+            워크스페이스 연결하기
           </h1>
           <p className="text-slate-600 text-lg leading-relaxed">
-            Sync your communication channels so your AI agents can start learning your workflow and reviewing conversations.
+            소통 채널을 동기화하여 AI 에이전트가 업무 흐름을 파악하고 대화를 검토할 수 있도록 하세요.
           </p>
         </div>
 
@@ -45,14 +45,14 @@ export default function ConnectWorkspacePage() {
                 <MessageSquare className="w-6 h-6 text-[#4a154b]" fill="currentColor" strokeWidth={0} />
               </div>
               <h2 className="text-xl font-bold mb-1 text-slate-900">Slack</h2>
-              <p className="text-slate-500 text-sm">Sync team channels.</p>
+              <p className="text-slate-500 text-sm">팀 채널 동기화</p>
             </div>
             
             <a 
               href="https://slack.com/oauth/v2/authorize?client_id=11198845306484.11193180857286&scope=channels:history,chat:write,groups:history,im:history,mpim:history&redirect_uri=http://localhost:3000/dashboard"
               className="mt-6 self-start bg-[#111827] hover:bg-black text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 group-hover:px-7 duration-300 ease-out"
             >
-              Connect Slack
+              슬랙 연결하기
               <span className="group-hover:translate-x-1 transition-transform">→</span>
             </a>
           </div>
@@ -67,7 +67,7 @@ export default function ConnectWorkspacePage() {
               </div>
               <div className="flex-1">
                 <h3 className="text-xl font-bold mb-1 text-slate-900">Gmail</h3>
-                <p className="text-slate-500 text-sm">Sync threads & calendars.</p>
+                <p className="text-slate-500 text-sm">스레드 및 캘린더 동기화</p>
               </div>
               <div className="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 group-hover:border-blue-500 group-hover:text-blue-500 transition-colors">
                 <span className="text-xl leading-none font-light mb-0.5">+</span>
@@ -81,7 +81,7 @@ export default function ConnectWorkspacePage() {
               </div>
               <div className="flex-1">
                 <h3 className="text-xl font-bold mb-1 text-slate-900">Outlook</h3>
-                <p className="text-slate-500 text-sm">Manage enterprise inbox.</p>
+                <p className="text-slate-500 text-sm">엔터프라이즈 수신함 관리</p>
               </div>
               <div className="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 group-hover:border-blue-500 group-hover:text-blue-500 transition-colors">
                 <span className="text-xl leading-none font-light mb-0.5">+</span>
@@ -98,13 +98,13 @@ export default function ConnectWorkspacePage() {
               </div>
               <div>
                 <div className="flex items-center gap-3 mb-2">
-                  <h3 className="text-xl font-bold text-slate-900">KakaoTalk Chat History</h3>
+                  <h3 className="text-xl font-bold text-slate-900">카카오톡 대화 내용</h3>
                   <span className="px-2 py-0.5 rounded-md bg-orange-100 text-orange-700 text-[10px] font-bold tracking-widest uppercase">
-                    Optional
+                    선택 사항
                   </span>
                 </div>
                 <p className="text-slate-500 text-sm leading-relaxed max-w-xl">
-                  Upload a <code className="bg-slate-100 px-1.5 py-0.5 rounded text-xs">.txt</code> or <code className="bg-slate-100 px-1.5 py-0.5 rounded text-xs">.zip</code> export of your KakaoTalk chats. This allows your AI agents to understand the historical context of local client communications.
+                  카카오톡 대화방에서 내보낸 <code className="bg-slate-100 px-1.5 py-0.5 rounded text-xs">.txt</code> 또는 <code className="bg-slate-100 px-1.5 py-0.5 rounded text-xs">.zip</code> 파일을 업로드하세요. AI 에이전트가 고객과의 이전 대화 맥락을 파악하는 데 도움이 됩니다.
                 </p>
               </div>
             </div>
@@ -114,7 +114,7 @@ export default function ConnectWorkspacePage() {
                 <Upload className="w-5 h-5" />
               </div>
               <span className="text-sm font-medium text-slate-500 group-hover/drop:text-blue-600 transition-colors">
-                Drop chat export here
+                여기에 대화 파일 업로드
               </span>
             </div>
           </div>
@@ -125,9 +125,9 @@ export default function ConnectWorkspacePage() {
       {/* Footer */}
       <footer className="p-6 lg:px-12 flex flex-col sm:flex-row justify-between items-center text-xs text-slate-400">
         <div className="flex gap-6 mb-4 sm:mb-0">
-          <Link href="#" className="hover:text-slate-600 transition-colors">Privacy Policy</Link>
-          <Link href="#" className="hover:text-slate-600 transition-colors">Terms of Service</Link>
-          <Link href="#" className="hover:text-slate-600 transition-colors">Security</Link>
+          <Link href="#" className="hover:text-slate-600 transition-colors">개인정보 처리방침</Link>
+          <Link href="#" className="hover:text-slate-600 transition-colors">이용약관</Link>
+          <Link href="#" className="hover:text-slate-600 transition-colors">보안 정책</Link>
         </div>
         <div>
           © 2024 Aigent Sync. All rights reserved.

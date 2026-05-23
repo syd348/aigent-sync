@@ -20,23 +20,24 @@ import { cn } from "@/app/lib/utils";
 
 const PRIORITY_OPTIONS: TaskPriority[] = ["High", "Medium", "Low"];
 const STATUS_OPTIONS = [
-  { label: "All Statuses", value: "" },
-  { label: "To-do", value: "pending" },
-  { label: "In Progress", value: "in-progress" },
-  { label: "Done", value: "done" },
+  { label: "모든 상태", value: "" },
+  { label: "할 일", value: "pending" },
+  { label: "진행 중", value: "in-progress" },
+  { label: "완료", value: "done" },
 ];
 const TIMEFRAME_OPTIONS = [
-  "Last 7 Days",
-  "Last 30 Days",
-  "Last 3 Months",
-  "All Time",
+  "최근 7일",
+  "최근 30일",
+  "최근 3달",
+  "전체 기간",
 ];
 
 function StatusBadge({ status }: { status: TaskStatus }) {
-  const config = {
-    pending: { label: "To-do", className: "bg-slate-100 text-slate-600 border border-slate-200" },
-    "in-progress": { label: "In-progress", className: "bg-blue-50 text-blue-600 border border-blue-200" },
-    done: { label: "Done", className: "bg-orange-50 text-orange-500 border border-orange-200" },
+  const config: Record<string, { label: string; className: string }> = {
+    pending: { label: "할 일", className: "bg-slate-100 text-slate-600 border border-slate-200" },
+    "in-progress": { label: "진행 중", className: "bg-blue-50 text-blue-600 border border-blue-200" },
+    done: { label: "완료", className: "bg-orange-50 text-orange-500 border border-orange-200" },
+    review: { label: "검토 중", className: "bg-purple-50 text-purple-600 border border-purple-200" },
   };
   const { label, className } = config[status] ?? config.pending;
   return (
@@ -118,21 +119,21 @@ function AssigneeAvatar({ name }: { name: string }) {
 }
 
 function formatDeadline(deadline: string): string {
-  if (!deadline || deadline === "TBD") return "TBD";
+  if (!deadline || deadline === "TBD") return "미정";
   const parts = deadline.split("-");
   if (parts.length !== 3) return deadline;
   const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
-  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  return d.toLocaleDateString("ko-KR", { year: "numeric", month: "short", day: "numeric" });
 }
 
 function isWithinTimeframe(deadline: string, timeframe: string): boolean {
-  if (timeframe === "All Time") return true;
+  if (timeframe === "전체 기간") return true;
   if (!deadline || deadline === "TBD") return true;
   const parts = deadline.split("-");
   if (parts.length !== 3) return true;
   const taskDate = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
   const now = new Date();
-  const days = timeframe === "Last 7 Days" ? 7 : timeframe === "Last 30 Days" ? 30 : 90;
+  const days = timeframe === "최근 7일" ? 7 : timeframe === "최근 30일" ? 30 : 90;
   const diff = Math.abs((now.getTime() - taskDate.getTime()) / (1000 * 60 * 60 * 24));
   return diff <= days;
 }
@@ -148,7 +149,7 @@ export default function TasksPage() {
   // Filters
   const [statusFilter, setStatusFilter] = useState("");
   const [priorityFilter, setPriorityFilter] = useState<TaskPriority | "">("");
-  const [timeframe, setTimeframe] = useState("Last 7 Days");
+  const [timeframe, setTimeframe] = useState("최근 7일");
   const [showStatusMenu, setShowStatusMenu] = useState(false);
   const [showTimeMenu, setShowTimeMenu] = useState(false);
   const [showPriorityMenu, setShowPriorityMenu] = useState(false);
@@ -173,15 +174,16 @@ export default function TasksPage() {
       const fetched = await fetchTasks();
 
       // Detect genuinely new tasks since last poll
-      const newIds = fetched
+      const validTasks = fetched.filter(t => t.status !== "review");
+      const newIds = validTasks
         .map((t) => t.id)
         .filter((id) => !prevTaskIdsRef.current.has(id));
       if (newIds.length > 0 && prevTaskIdsRef.current.size > 0) {
         setNewTaskCount((c) => c + newIds.length);
       }
-      prevTaskIdsRef.current = new Set(fetched.map((t) => t.id));
+      prevTaskIdsRef.current = new Set(validTasks.map((t) => t.id));
 
-      setTasks(fetched);
+      setTasks(validTasks);
     } catch (e) {
       console.error("Failed to load tasks", e);
     } finally {
@@ -235,7 +237,7 @@ export default function TasksPage() {
         <div>
           <div className="flex items-center gap-3 mb-1">
             <h1 className="text-3xl font-extrabold text-indigo-900 tracking-tight">
-              Task Orchestration
+              전체 작업 현황
             </h1>
             {newTaskCount > 0 && (
               <button
@@ -243,26 +245,26 @@ export default function TasksPage() {
                 className="flex items-center gap-1.5 bg-green-500 text-white text-xs font-bold px-2.5 py-1 rounded-full animate-in zoom-in-75 duration-300 hover:bg-green-600 transition-colors"
               >
                 <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
-                +{newTaskCount} New
+                +{newTaskCount}개 새 항목
               </button>
             )}
           </div>
           <p className="text-slate-500 text-sm flex items-center gap-2">
-            Manage AI-detected action items and cross-channel workflows.
+            AI가 감지한 실행 작업과 교차 채널 워크플로우를 관리합니다.
             <span className="flex items-center gap-1 text-slate-400 text-xs">
               <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
-              Live
+              실시간
             </span>
           </p>
         </div>
         <div className="flex items-center gap-3">
           <button className="flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-200 bg-white text-slate-700 text-sm font-medium hover:bg-slate-50 transition-colors shadow-sm">
             <Download className="w-4 h-4" />
-            Export
+            내보내기
           </button>
           <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-900 text-white text-sm font-medium hover:bg-indigo-800 transition-colors shadow-sm">
             <Zap className="w-4 h-4" />
-            Run Automation
+            자동화 실행
           </button>
         </div>
       </div>
@@ -271,12 +273,12 @@ export default function TasksPage() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {/* STATUS */}
         <div className="bg-white border border-slate-200 rounded-xl p-4 relative shadow-sm">
-          <p className="text-[10px] font-bold text-slate-400 tracking-widest uppercase mb-2">Status</p>
+          <p className="text-[10px] font-bold text-slate-400 tracking-widest uppercase mb-2">상태</p>
           <button
             onClick={() => { setShowStatusMenu(!showStatusMenu); setShowTimeMenu(false); setShowPriorityMenu(false); }}
             className="flex items-center justify-between w-full text-sm font-medium text-slate-700 hover:text-slate-900"
           >
-            {STATUS_OPTIONS.find(o => o.value === statusFilter)?.label || "All Statuses"}
+            {STATUS_OPTIONS.find(o => o.value === statusFilter)?.label || "모든 상태"}
             <ChevronDown className="w-4 h-4 text-slate-400" />
           </button>
           {showStatusMenu && (
@@ -286,7 +288,7 @@ export default function TasksPage() {
                   key={opt.value}
                   onClick={() => { setStatusFilter(opt.value); setShowStatusMenu(false); }}
                   className={cn(
-                    "w-full text-left px-4 py-2 text-sm transition-colors hover:bg-slate-50",
+                     "w-full text-left px-4 py-2 text-sm transition-colors hover:bg-slate-50",
                     statusFilter === opt.value ? "text-indigo-700 font-semibold" : "text-slate-700"
                   )}
                 >
@@ -299,12 +301,12 @@ export default function TasksPage() {
 
         {/* PRIORITY */}
         <div className="bg-white border border-slate-200 rounded-xl p-4 relative shadow-sm">
-          <p className="text-[10px] font-bold text-slate-400 tracking-widest uppercase mb-2">Priority</p>
+          <p className="text-[10px] font-bold text-slate-400 tracking-widest uppercase mb-2">우선순위</p>
           <button
             onClick={() => { setShowPriorityMenu(!showPriorityMenu); setShowStatusMenu(false); setShowTimeMenu(false); }}
             className="flex items-center justify-between w-full text-sm font-medium text-slate-700 hover:text-slate-900"
           >
-            {priorityFilter || "All Priorities"}
+            {priorityFilter === "High" ? "높음" : priorityFilter === "Medium" ? "보통" : priorityFilter === "Low" ? "낮음" : "모든 우선순위"}
             <ChevronDown className="w-4 h-4 text-slate-400" />
           </button>
           {showPriorityMenu && (
@@ -316,7 +318,7 @@ export default function TasksPage() {
                   priorityFilter === "" ? "text-indigo-700 font-semibold" : "text-slate-700"
                 )}
               >
-                All Priorities
+                모든 우선순위
               </button>
               {PRIORITY_OPTIONS.map((p) => (
                 <button
@@ -327,7 +329,7 @@ export default function TasksPage() {
                     priorityFilter === p ? "text-indigo-700 font-semibold" : "text-slate-700"
                   )}
                 >
-                  {p}
+                  {p === "High" ? "높음" : p === "Medium" ? "보통" : "낮음"}
                 </button>
               ))}
             </div>
@@ -336,7 +338,7 @@ export default function TasksPage() {
 
         {/* ASSIGNEE */}
         <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-          <p className="text-[10px] font-bold text-slate-400 tracking-widest uppercase mb-2">Assignee</p>
+          <p className="text-[10px] font-bold text-slate-400 tracking-widest uppercase mb-2">담당자</p>
           <div className="flex items-center gap-1">
             {uniqueAssignees.map((t) => (
               <AssigneeAvatar key={t.id} name={t.assignee} />
@@ -347,14 +349,14 @@ export default function TasksPage() {
               </div>
             )}
             {uniqueAssignees.length === 0 && (
-              <span className="text-xs text-slate-400">No assignees yet</span>
+              <span className="text-xs text-slate-400">아직 배정된 담당자 없음</span>
             )}
           </div>
         </div>
 
         {/* TIMEFRAME */}
         <div className="bg-white border border-slate-200 rounded-xl p-4 relative shadow-sm">
-          <p className="text-[10px] font-bold text-slate-400 tracking-widest uppercase mb-2">Timeframe</p>
+          <p className="text-[10px] font-bold text-slate-400 tracking-widest uppercase mb-2">조회 기간</p>
           <button
             onClick={() => { setShowTimeMenu(!showTimeMenu); setShowStatusMenu(false); setShowPriorityMenu(false); }}
             className="flex items-center justify-between w-full text-sm font-medium text-slate-700 hover:text-slate-900"
@@ -384,8 +386,8 @@ export default function TasksPage() {
       {/* Task Table */}
       <div className="bg-white border border-slate-200 rounded-xl shadow-sm mb-6">
         {/* Table Header */}
-        <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_80px_100px] gap-2 px-6 py-3 border-b border-slate-100 bg-slate-50 rounded-t-xl">
-          {["Task Name", "Assignee", "Confidence", "Deadline", "Status", "Channel", "Actions"].map((h) => (
+        <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_80px] gap-2 px-6 py-3 border-b border-slate-100 bg-slate-50 rounded-t-xl">
+          {["작업 이름", "담당자", "중요도", "마감일", "상태", "채널"].map((h) => (
             <div key={h} className="text-[10px] font-bold text-slate-400 tracking-widest uppercase">
               {h}
             </div>
@@ -399,27 +401,21 @@ export default function TasksPage() {
         ) : filteredTasks.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-slate-400">
             <CheckCircle2 className="w-10 h-10 mb-3 text-slate-200" />
-            <p className="text-sm font-medium">No tasks match your filters.</p>
-            <p className="text-xs mt-1">Try adjusting the filters above.</p>
+            <p className="text-sm font-medium">필터와 일치하는 작업이 없습니다.</p>
+            <p className="text-xs mt-1">위의 필터를 조정해 보세요.</p>
           </div>
         ) : (
           <div className="divide-y divide-slate-100">
             {filteredTasks.map((task) => (
               <div
                 key={task.id}
-                className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_80px_100px] gap-2 px-6 py-4 hover:bg-slate-50/60 transition-colors items-center group relative"
+                className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_80px] gap-2 px-6 py-4 hover:bg-slate-50/60 transition-colors items-center group relative"
               >
                 {/* Task Name */}
                 <div>
                   <p className="font-semibold text-slate-800 text-sm leading-snug line-clamp-2">
                     {task.title}
                   </p>
-                  {task.priority === "High" && (
-                    <p className="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3 text-red-400" />
-                      High priority
-                    </p>
-                  )}
                 </div>
 
                 {/* Assignee */}
@@ -428,8 +424,17 @@ export default function TasksPage() {
                   <span className="text-xs text-slate-600 font-medium truncate">{task.assignee}</span>
                 </div>
 
-                {/* Confidence */}
-                <ConfidenceBar value={task.confidence} />
+                {/* Priority */}
+                <div className="flex items-center">
+                  <span className={cn(
+                    "px-2 py-0.5 rounded text-[11px] font-semibold",
+                    task.priority === "High" ? "bg-red-50 text-red-600 border border-red-200" :
+                    task.priority === "Medium" ? "bg-yellow-50 text-yellow-600 border border-yellow-200" :
+                    "bg-green-50 text-green-600 border border-green-200"
+                  )}>
+                    {task.priority === "High" ? "높음" : task.priority === "Medium" ? "보통" : "낮음"}
+                  </span>
+                </div>
 
                 {/* Deadline */}
                 <div className="flex items-center gap-1.5">
@@ -438,68 +443,48 @@ export default function TasksPage() {
                 </div>
 
                 {/* Status */}
-                <div>
-                  <StatusBadge status={task.status} />
-                </div>
-
-                {/* Channel */}
-                <ChannelIcon source={task.source} />
-
-                {/* Actions */}
-                <div className="flex items-center gap-2 relative">
-                  {task.status !== "in-progress" && task.status !== "done" && (
-                    <button
-                      onClick={() => handleStatusChange(task.id, "in-progress")}
-                      className="text-[11px] text-indigo-600 font-semibold hover:underline"
-                    >
-                      Start
-                    </button>
-                  )}
-                  {task.status === "in-progress" && (
-                    <button
-                      onClick={() => handleStatusChange(task.id, "done")}
-                      className="text-[11px] text-green-600 font-semibold hover:underline"
-                    >
-                      Done
-                    </button>
-                  )}
+                <div className="relative">
                   <button
                     onClick={() => setActiveMenuId(activeMenuId === task.id ? null : task.id)}
-                    className="p-1 rounded hover:bg-slate-200 transition-colors"
+                    className="flex items-center gap-1 hover:opacity-80 transition-opacity"
                   >
-                    <MoreVertical className="w-4 h-4 text-slate-400" />
+                    <StatusBadge status={task.status} />
+                    <ChevronDown className="w-3 h-3 text-slate-400" />
                   </button>
 
                   {activeMenuId === task.id && (
-                    <div className="absolute right-0 top-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg z-30 w-36 overflow-hidden">
+                    <div className="absolute left-0 top-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg z-30 w-32 overflow-hidden">
                       <button
                         onClick={() => { handleStatusChange(task.id, "pending"); setActiveMenuId(null); }}
                         className="w-full text-left px-4 py-2 text-xs text-slate-700 hover:bg-slate-50"
                       >
-                        Mark To-do
+                        할 일로 표시
                       </button>
                       <button
                         onClick={() => { handleStatusChange(task.id, "in-progress"); setActiveMenuId(null); }}
                         className="w-full text-left px-4 py-2 text-xs text-slate-700 hover:bg-slate-50"
                       >
-                        Mark In Progress
+                        진행 중으로 표시
                       </button>
                       <button
                         onClick={() => { handleStatusChange(task.id, "done"); setActiveMenuId(null); }}
                         className="w-full text-left px-4 py-2 text-xs text-slate-700 hover:bg-slate-50"
                       >
-                        Mark Done
+                        완료로 표시
                       </button>
                       <hr className="border-slate-100" />
                       <button
                         onClick={() => handleDelete(task.id)}
                         className="w-full text-left px-4 py-2 text-xs text-red-500 hover:bg-red-50"
                       >
-                        Delete
+                        삭제
                       </button>
                     </div>
                   )}
                 </div>
+
+                {/* Channel */}
+                <ChannelIcon source={task.source} />
               </div>
             ))}
           </div>
@@ -512,18 +497,18 @@ export default function TasksPage() {
           <Zap className="w-6 h-6 text-white" />
         </div>
         <div className="flex-1">
-          <h3 className="font-bold text-indigo-900 text-base mb-1">Workflow Optimization Alert</h3>
+          <h3 className="font-bold text-indigo-900 text-base mb-1">워크플로우 최적화 알림</h3>
           <p className="text-slate-500 text-sm leading-relaxed">
-            Aigent Sync detected that{" "}
-            <span className="font-semibold text-slate-800">34% of Slack tasks</span> are missing
-            deadline parameters. Apply AI-estimated deadlines to all pending entries?
+            Aigent Sync가{" "}
+            <span className="font-semibold text-slate-800">슬랙 작업의 34%</span>에 마감일
+            매개변수가 누락된 것을 감지했습니다. 모든 대기 중인 항목에 AI가 예측한 마감일을 적용하시겠습니까?
           </p>
           <div className="flex gap-3 mt-4">
             <button className="px-5 py-2 bg-indigo-900 text-white text-sm font-semibold rounded-lg hover:bg-indigo-800 transition-colors">
-              Apply to All
+              모두 적용
             </button>
             <button className="px-5 py-2 text-slate-600 text-sm font-medium hover:text-slate-900 transition-colors">
-              View Details
+              상세 보기
             </button>
           </div>
         </div>

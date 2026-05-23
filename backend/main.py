@@ -227,7 +227,7 @@ def process_slack_message(text: str):
             deadline=analysis.deadline,
             description=analysis.description,
             priority=analysis.priority,
-            status="To-do",
+            status="review",
             source="slack"
         )
         db.add(db_task)

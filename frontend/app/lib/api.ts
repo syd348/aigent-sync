@@ -5,6 +5,7 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:800
 // Helper to map backend status to frontend status
 function mapStatusToFrontend(backendStatus: string): TaskStatus {
   switch (backendStatus) {
+    case "review": return "review";
     case "To-do": return "pending";
     case "In Progress": return "in-progress";
     case "Done": return "done";
@@ -15,6 +16,7 @@ function mapStatusToFrontend(backendStatus: string): TaskStatus {
 // Helper to map frontend status to backend status
 function mapStatusToBackend(frontendStatus: TaskStatus): string {
   switch (frontendStatus) {
+    case "review": return "review";
     case "pending": return "To-do";
     case "in-progress": return "In Progress";
     case "done": return "Done";

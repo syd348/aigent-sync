@@ -82,8 +82,8 @@ export default function DashboardPage() {
   return (
     <div className="max-w-6xl mx-auto animate-in fade-in duration-500">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 tracking-tight mb-2">Dashboard</h1>
-        <p className="text-slate-500">Real-time overview of your team's performance and AI insights.</p>
+        <h1 className="text-3xl font-bold text-slate-900 tracking-tight mb-2">대시보드</h1>
+        <p className="text-slate-500">팀의 실시간 성과 및 AI 통찰력을 한눈에 확인하세요.</p>
       </div>
 
       <MetricsOverview 

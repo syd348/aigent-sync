@@ -19,15 +19,15 @@ export function Sidebar() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   
   const navItems = [
-    { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-    { name: "AI Review", href: "/ai-review", icon: BrainCircuit },
-    { name: "Task List", href: "/tasks", icon: CheckSquare },
-    { name: "Integrations", href: "#", icon: Puzzle },
+    { name: "대시보드", href: "/dashboard", icon: LayoutDashboard },
+    { name: "AI 검토", href: "/ai-review", icon: BrainCircuit },
+    { name: "작업 목록", href: "/tasks", icon: CheckSquare },
+    { name: "연동 관리", href: "#", icon: Puzzle },
   ];
 
   const bottomItems = [
-    { name: "Support", href: "#", icon: LifeBuoy },
-    { name: "Settings", href: "#", icon: Settings },
+    { name: "고객 지원", href: "#", icon: LifeBuoy },
+    { name: "설정", href: "#", icon: Settings },
   ];
 
   return (
@@ -40,7 +40,7 @@ export function Sidebar() {
         </div>
         <div>
           <h1 className="font-bold text-lg leading-tight text-slate-900">Aigent Sync</h1>
-          <p className="text-xs text-slate-500">AI Co-pilot</p>
+          <p className="text-xs text-slate-500">AI 코파일럿</p>
         </div>
       </div>
 
@@ -70,7 +70,7 @@ export function Sidebar() {
           onClick={() => setIsModalOpen(true)}
           className="w-full bg-indigo-900 text-white rounded-md py-2 text-sm font-medium hover:bg-indigo-800 transition-colors mb-4 flex items-center justify-center gap-2"
         >
-          <span className="text-lg leading-none">+</span> New Task
+          <span className="text-lg leading-none">+</span> 새 작업
         </button>
         {bottomItems.map((item) => (
           <Link

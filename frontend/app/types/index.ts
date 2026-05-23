@@ -1,4 +1,4 @@
-export type TaskStatus = "pending" | "in-progress" | "done";
+export type TaskStatus = "review" | "pending" | "in-progress" | "done";
 export type TaskPriority = "High" | "Medium" | "Low";
 
 export interface Task {
