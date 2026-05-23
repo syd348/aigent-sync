@@ -23,7 +23,13 @@ export default function DashboardPage() {
         setIsLoading(false);
       }
     };
+    
     loadData();
+    
+    window.addEventListener("tasks-updated", loadData);
+    return () => {
+      window.removeEventListener("tasks-updated", loadData);
+    };
   }, []);
 
   // Compute metrics dynamically

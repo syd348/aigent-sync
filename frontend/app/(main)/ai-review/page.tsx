@@ -326,56 +326,7 @@ function InputPanel({
   );
 }
 
-// ─────────────────────────────────────────────
-// DEMO data (shown until real items arrive)
-// ─────────────────────────────────────────────
-const DEMO_TASKS: PendingTask[] = [
-  {
-    id: "demo-1",
-    channel: "#product-ops",
-    channelType: "slack",
-    originalMessage:
-      '"Hey @Sarah, can you make sure to update the Q3 roadmap deck with the new agentic workflows by EOD Thursday? We need it for the board meeting."',
-    requester: "John Doe",
-    requesterInitials: "JD",
-    requesterColor: "bg-blue-600",
-    sentAgo: "Sent 2h ago",
-    aiTitle: "Update Q3 Roadmap Deck",
-    assignee: "Sarah Miller",
-    deadline: "Aug 24 (Thursday)\n5:00 PM",
-    confidence: 0.94,
-  },
-  {
-    id: "demo-2",
-    channel: "External Partner",
-    channelType: "email",
-    originalMessage:
-      '"Regarding the API integration—we\'ve finished the documentation. Could you review the security protocols in section 4.2 by Friday noon?"',
-    requester: "Alex Martinez",
-    requesterInitials: "AM",
-    requesterColor: "bg-orange-500",
-    sentAgo: "Sent 4h ago",
-    aiTitle: "Review Security Protocols (Sec 4.2)",
-    assignee: "Security Team",
-    deadline: "Aug 25 (Friday)\n12:00 PM",
-    confidence: 0.72,
-  },
-  {
-    id: "demo-3",
-    channel: "#dev-channel",
-    channelType: "slack",
-    originalMessage:
-      '"Someone needs to look at the latency issues on the staging environment. Maybe sometime this week?"',
-    requester: "Max Lee",
-    requesterInitials: "ML",
-    requesterColor: "bg-teal-600",
-    sentAgo: "Sent 1h ago",
-    aiTitle: "Investigate Staging Latency",
-    assignee: "Unclear – Manual assign required",
-    deadline: "Aug 27 (Sunday)\n11:59 PM",
-    confidence: 0.45,
-  },
-];
+
 
 const ITEMS_PER_PAGE = 3;
 
@@ -383,7 +334,7 @@ const ITEMS_PER_PAGE = 3;
 // Main Page
 // ─────────────────────────────────────────────
 export default function AIReviewPage() {
-  const [tasks, setTasks] = useState<PendingTask[]>(DEMO_TASKS);
+  const [tasks, setTasks] = useState<PendingTask[]>([]);
   const [page, setPage] = useState(1);
 
   const totalPages = Math.ceil(tasks.length / ITEMS_PER_PAGE);

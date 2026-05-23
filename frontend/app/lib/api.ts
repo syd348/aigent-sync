@@ -52,7 +52,7 @@ export async function createTask(task: Partial<Task>): Promise<Task> {
   const payload: any = {
     assignee: task.assignee,
     description: task.title,
-    priority: "Medium",
+    priority: task.priority || "Medium",
     status: mapStatusToBackend(task.status || "pending"),
     deadline: null,
   };

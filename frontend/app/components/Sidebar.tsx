@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { cn } from "@/app/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -11,9 +12,11 @@ import {
   LifeBuoy,
   Settings
 } from "lucide-react";
+import { AiTaskModal } from "./AiTaskModal";
 
 export function Sidebar() {
   const pathname = usePathname();
+  const [isModalOpen, setIsModalOpen] = useState(false);
   
   const navItems = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -63,7 +66,10 @@ export function Sidebar() {
       </nav>
 
       <div className="p-4 border-t border-slate-200 space-y-1">
-        <button className="w-full bg-indigo-900 text-white rounded-md py-2 text-sm font-medium hover:bg-indigo-800 transition-colors mb-4 flex items-center justify-center gap-2">
+        <button 
+          onClick={() => setIsModalOpen(true)}
+          className="w-full bg-indigo-900 text-white rounded-md py-2 text-sm font-medium hover:bg-indigo-800 transition-colors mb-4 flex items-center justify-center gap-2"
+        >
           <span className="text-lg leading-none">+</span> New Task
         </button>
         {bottomItems.map((item) => (
@@ -77,6 +83,8 @@ export function Sidebar() {
           </Link>
         ))}
       </div>
+
+      <AiTaskModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </aside>
   );
 }

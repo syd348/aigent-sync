@@ -151,6 +151,11 @@ export default function TasksPage() {
 
   useEffect(() => {
     loadTasks();
+    
+    window.addEventListener("tasks-updated", loadTasks);
+    return () => {
+      window.removeEventListener("tasks-updated", loadTasks);
+    };
   }, []);
 
   const loadTasks = async () => {
