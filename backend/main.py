@@ -84,22 +84,35 @@ def _analyze_text_with_gemini(text: str) -> schemas.AnalyzeResponse:
     "{text}"
     """
 
-    response = client.models.generate_content(
-        model='gemini-2.5-flash',
-        contents=prompt,
-        config=types.GenerateContentConfig(
-            response_mime_type="application/json",
-            response_schema=schemas.AnalyzeResponse,
-        ),
-    )
-    
-    return schemas.AnalyzeResponse.model_validate_json(response.text)
+    max_retries = 2
+    for attempt in range(max_retries):
+        try:
+            response = client.models.generate_content(
+                model='gemini-2.5-flash',
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json",
+                    response_schema=schemas.AnalyzeResponse,
+                ),
+            )
+            return schemas.AnalyzeResponse.model_validate_json(response.text)
+        except Exception as e:
+            if "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e):
+                if attempt < max_retries - 1:
+                    print(f"Gemini Rate Limit (429) hit. Retrying in 2 seconds (attempt {attempt + 1}/{max_retries})...")
+                    import time
+                    time.sleep(2.0)
+                    continue
+            raise e
 
 
 def get_slack_username(user_id: str) -> Optional[str]:
     # Fallback mapping for local testing
     test_users = {
         "U0B5R78G09Y": "박지현",
+        "U0B5P5CL6EA": "신서연",
+        "U0B5UR2NX60": "최원아",
+        "U0B59NT0V0X": "차서현",
     }
     if user_id in test_users:
         return test_users[user_id]
@@ -125,6 +138,42 @@ def get_slack_username(user_id: str) -> Optional[str]:
     return None
 
 
+def _fallback_parse_text(text: str, resolved_text: str, assignee: Optional[str] = None) -> schemas.AnalyzeResponse:
+    from datetime import datetime, timedelta
+    # Heuristically estimate deadline
+    deadline = None
+    today = datetime.now()
+    if any(kw in text for kw in ["오늘", "18:00", "오늘까지"]):
+        deadline = today.date()
+    elif any(kw in text for kw in ["내일", "내일까지"]):
+        deadline = (today + timedelta(days=1)).date()
+        
+    # Heuristically estimate priority
+    priority = "Medium"
+    if any(kw in text for kw in ["긴급", "High", "급해", "오늘까지", "18:00", "우선", "피그마"]):
+        priority = "High"
+    elif "낮음" in text or "Low" in text:
+        priority = "Low"
+        
+    # Heuristically extract description (remove user mentions and keep first 18 chars)
+    clean_desc = resolved_text
+    # Remove mention placeholders like "슬랙유저(U...)" or names like "박지현" at start
+    clean_desc = re.sub(r"(슬랙유저\(U[A-Z0-9]+\)|박지현|신서연|최원아|차서현)", "", clean_desc)
+    clean_desc = clean_desc.strip(" ,.?!:;~\t\n")
+    if len(clean_desc) > 20:
+        clean_desc = clean_desc[:17] + "..."
+    if not clean_desc:
+        clean_desc = "슬랙 연동 태스크"
+        
+    return schemas.AnalyzeResponse(
+        assignee=assignee,
+        deadline=deadline,
+        description=clean_desc,
+        priority=priority,
+        confidence_score=0.5
+    )
+
+
 def process_slack_message(text: str):
     """
     Background task to analyze Slack message via Gemini and save to the database.
@@ -135,32 +184,42 @@ def process_slack_message(text: str):
         # Pre-process text to resolve Slack mentions if possible for better Gemini context
         # Find all mentions like <@U0B5R78G09Y>
         mentions = re.findall(r"<@(U[A-Z0-9]+)>", text)
+        print(f"DEBUG: Found mentions in text: {mentions}")
         resolved_text = text
         user_mappings = {}
         for uid in mentions:
             name = get_slack_username(uid)
-            if name:
-                resolved_text = resolved_text.replace(f"<@{uid}>", name)
-                user_mappings[uid] = name
+            if not name:
+                # Use a Korean placeholder containing the ID so Gemini extracts it successfully
+                name = f"슬랙유저({uid})"
+            
+            resolved_text = resolved_text.replace(f"<@{uid}>", name)
+            user_mappings[uid] = name
 
-        # 1. Analyze text using Gemini helper (using resolved text so Gemini sees actual name)
-        analysis = _analyze_text_with_gemini(resolved_text)
-        
-        # Determine assignee name
-        assignee_name = analysis.assignee
-        # If assignee is still a User ID (e.g. U0B5R78G09Y or <@U...>), resolve it
-        if assignee_name:
-            match = re.search(r"(U[A-Z0-9]+)", assignee_name)
-            if match:
-                uid = match.group(1)
-                resolved_name = get_slack_username(uid) or user_mappings.get(uid)
-                if resolved_name:
-                    assignee_name = resolved_name
-            elif assignee_name.startswith("<@") and assignee_name.endswith(">"):
-                uid = assignee_name[2:-1]
-                resolved_name = get_slack_username(uid) or user_mappings.get(uid)
-                if resolved_name:
-                    assignee_name = resolved_name
+        # 1. Analyze text using Gemini helper or fallback
+        try:
+            analysis = _analyze_text_with_gemini(resolved_text)
+            assignee_name = analysis.assignee
+            # If assignee is still a User ID (e.g. U0B5R78G09Y or <@U...>), resolve it
+            if assignee_name:
+                match = re.search(r"(U[A-Z0-9]+)", assignee_name)
+                if match:
+                    uid = match.group(1)
+                    resolved_name = get_slack_username(uid) or user_mappings.get(uid)
+                    if resolved_name:
+                        assignee_name = resolved_name
+                elif assignee_name.startswith("<@") and assignee_name.endswith(">"):
+                    uid = assignee_name[2:-1]
+                    resolved_name = get_slack_username(uid) or user_mappings.get(uid)
+                    if resolved_name:
+                        assignee_name = resolved_name
+        except Exception as gemini_err:
+            print(f"Gemini API error (falling back to rule-based parser): {str(gemini_err)}")
+            guessed_assignee = None
+            if user_mappings:
+                guessed_assignee = list(user_mappings.values())[0]
+            analysis = _fallback_parse_text(text, resolved_text, guessed_assignee)
+            assignee_name = analysis.assignee
         
         # 2. Store extracted task in DB
         db_task = models.Task(
@@ -222,6 +281,8 @@ async def slack_events(request: Request, background_tasks: BackgroundTasks):
             and not event.get("subtype")
         )
         if is_normal_message:
+            sender_id = event.get("user")
+            print(f"DEBUG: Slack message from user ID: {sender_id}")
             text = event.get("text")
             if text:
                 # Add task to background to respond to Slack immediately (within 3 seconds limit)
